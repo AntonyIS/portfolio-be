@@ -11,52 +11,55 @@ package services
 import (
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/ports"
+	"github.com/google/uuid"
 )
 
 type PortfolioService struct {
-	repo *ports.PortfolioRepository
+	repo ports.PortfolioRepository
 }
 
 func NewPortfolioRepository(repo *ports.PortfolioRepository) *PortfolioService {
 	return &PortfolioService{
-		repo: repo,
+		repo: *repo,
 	}
 }
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
-	return nil, nil
+	user.Id = uuid.New().String()
+	return svc.repo.CreateUser(user)
 }
 
 func (svc *PortfolioService) ReadUser(id string) (*domain.User, error) {
-	return nil, nil
+	return svc.repo.ReadUser(id)
 }
 
 func (svc *PortfolioService) ReadUsers() ([]*domain.User, error) {
-	return nil, nil
+	return svc.repo.ReadUsers()
 }
 
 func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error) {
-	return nil, nil
+	return svc.repo.UpdateUser(user)
 }
 func (svc *PortfolioService) DeleteUser(id string) error {
-	return nil
+	return svc.repo.DeleteUser(id)
 }
 
-func (svc *PortfolioService) CreateProject(Project *domain.Project) (*domain.Project, error) {
-	return nil, nil
+func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Project, error) {
+	project.Id = uuid.New().String()
+	return svc.repo.CreateProject(project)
 }
 
 func (svc *PortfolioService) ReadProject(id string) (*domain.Project, error) {
-	return nil, nil
+	return svc.repo.ReadProject(id)
 }
 
 func (svc *PortfolioService) ReadProjects() ([]*domain.Project, error) {
-	return nil, nil
+	return svc.repo.ReadProjects()
 }
 
-func (svc *PortfolioService) UpdateProject(Project *domain.Project) (*domain.Project, error) {
-	return nil, nil
+func (svc *PortfolioService) UpdateProject(project *domain.Project) (*domain.Project, error) {
+	return svc.repo.UpdateProject(project)
 }
 func (svc *PortfolioService) DeleteProject(id string) error {
-	return nil
+	return svc.repo.DeleteProject(id)
 }
