@@ -18,7 +18,7 @@ type PortfolioService struct {
 	repo ports.PortfolioRepository
 }
 
-func NewPortfolioRepository(repo *ports.PortfolioRepository) *PortfolioService {
+func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 	return &PortfolioService{
 		repo: *repo,
 	}

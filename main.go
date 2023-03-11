@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
+import (
+	"github.com/AntonyIS/portfolio-be/internal/adapters/http"
+)
 
 func main() {
-	fmt.Println("Hello world")
+	// Gin server
+	http.InitGinRoutes()
 }
