@@ -110,8 +110,16 @@ func (h handler) PutUser(ctx *gin.Context) {
 
 func (h handler) DeleteUser(ctx *gin.Context) {
 	id := ctx.Param("id")
-	res := h.svc.DeleteUser(id)
-	ctx.JSON(http.StatusCreated, res)
+	err := h.svc.DeleteUser(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "User deleted successfully",
+	})
 }
 
 func (h handler) PostProject(ctx *gin.Context) {
@@ -185,8 +193,16 @@ func (h handler) PutProject(ctx *gin.Context) {
 
 func (h handler) DeleteProject(ctx *gin.Context) {
 	id := ctx.Param("id")
-	res := h.svc.DeleteProject(id)
-	ctx.JSON(http.StatusCreated, res)
+	err := h.svc.DeleteUser(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusCreated, gin.H{
+		"message": "Project deleted successfully",
+	})
 }
 
 func home(ctx *gin.Context) {
@@ -209,7 +225,7 @@ func InitGinRoutes() {
 	// Users routes
 	usersRoutes := router.Group("/v1/users")
 	// Projects Routes
-	projectsRoutes := router.Group("/v1/pojects")
+	projectsRoutes := router.Group("/v1/projects")
 
 	{
 		usersRoutes.GET("/", handler.GetUsers)

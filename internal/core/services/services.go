@@ -9,6 +9,10 @@ Description :
 package services
 
 import (
+	"errors"
+	"fmt"
+	"time"
+
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/ports"
 	"github.com/google/uuid"
@@ -26,6 +30,7 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
 	user.Id = uuid.New().String()
+	user.GenerateHashPassord()
 	return svc.repo.CreateUser(user)
 }
 
@@ -40,13 +45,36 @@ func (svc *PortfolioService) ReadUsers() ([]*domain.User, error) {
 func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error) {
 	return svc.repo.UpdateUser(user)
 }
+
 func (svc *PortfolioService) DeleteUser(id string) error {
 	return svc.repo.DeleteUser(id)
 }
 
 func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Project, error) {
 	project.Id = uuid.New().String()
+	project.CreateAt = time.Now().UTC().Unix()
+	// *** Add project to user ***
+	userID := project.UserID
+	// Read user from Db using userID
+	user, err := svc.ReadUser(userID)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("User with ID %s not found", userID))
+	}
+
+	// Update user by adding prohectId
+	if user.Projects == nil {
+		user.Projects = map[string]*domain.Project{
+			project.Id: project,
+		}
+	} else {
+		user.Projects[project.Id] = project
+	}
+
+	// Save user
+	svc.repo.UpdateUser(user)
+	// Save Project
 	return svc.repo.CreateProject(project)
+
 }
 
 func (svc *PortfolioService) ReadProject(id string) (*domain.Project, error) {
@@ -60,6 +88,7 @@ func (svc *PortfolioService) ReadProjects() ([]*domain.Project, error) {
 func (svc *PortfolioService) UpdateProject(project *domain.Project) (*domain.Project, error) {
 	return svc.repo.UpdateProject(project)
 }
+
 func (svc *PortfolioService) DeleteProject(id string) error {
 	return svc.repo.DeleteProject(id)
 }

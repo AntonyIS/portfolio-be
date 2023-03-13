@@ -73,6 +73,10 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 		return nil, err
 	}
 
+	user, err = db.ReadUser(user.Id)
+	if err != nil {
+		return nil, err
+	}
 	return user, nil
 }
 
@@ -85,12 +89,12 @@ func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 			},
 		},
 	})
+
 	if err != nil {
 		return nil, err
 	}
 	if result.Item == nil {
-		msg := fmt.Sprintf("user with id [ %s ] not found", id)
-		return nil, errors.New(msg)
+		return nil, errors.New(fmt.Sprintf("user with id [ %s ] not found", id))
 	}
 	var user domain.User
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
@@ -106,6 +110,10 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 	filt := expression.Name("Id").AttributeNotExists()
 	proj := expression.NamesList(
 		expression.Name("id"),
+		expression.Name("firstname"),
+		expression.Name("lastname"),
+		expression.Name("email"),
+		expression.Name("projects"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 
@@ -127,7 +135,12 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 
 	for _, item := range result.Items {
 		var user domain.User
-		_ = dynamodbattribute.UnmarshalMap(item, &user)
+
+		err = dynamodbattribute.UnmarshalMap(item, &user)
+		if err != nil {
+			return nil, err
+		}
+
 		users = append(users, &user)
 
 	}
@@ -203,12 +216,12 @@ func (db *dynamoDbClient) ReadProject(id string) (*domain.Project, error) {
 			},
 		},
 	})
+
 	if err != nil {
 		return nil, err
 	}
 	if result.Item == nil {
-		msg := fmt.Sprintf("project with id [ %s ] not found", id)
-		return nil, errors.New(msg)
+		return nil, errors.New(fmt.Sprintf("project with id [ %s ] not found", id))
 	}
 	var project domain.Project
 	err = dynamodbattribute.UnmarshalMap(result.Item, &project)
@@ -224,6 +237,10 @@ func (db *dynamoDbClient) ReadProjects() ([]*domain.Project, error) {
 	filt := expression.Name("Id").AttributeNotExists()
 	proj := expression.NamesList(
 		expression.Name("id"),
+		expression.Name("title"),
+		expression.Name("body"),
+		expression.Name("user_id"),
+		expression.Name("created_at"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 
@@ -238,14 +255,17 @@ func (db *dynamoDbClient) ReadProjects() ([]*domain.Project, error) {
 		TableName:                 aws.String(db.projectsTableName),
 	}
 	result, err := db.client.Scan(params)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range result.Items {
 		var project domain.Project
-		_ = dynamodbattribute.UnmarshalMap(item, &project)
+
+		err = dynamodbattribute.UnmarshalMap(item, &project)
+		if err != nil {
+			return nil, err
+		}
 		projects = append(projects, &project)
 
 	}
@@ -271,6 +291,7 @@ func (db *dynamoDbClient) UpdateProject(project *domain.Project) (*domain.Projec
 
 	return project, nil
 }
+
 func (db *dynamoDbClient) DeleteProject(id string) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
@@ -278,7 +299,7 @@ func (db *dynamoDbClient) DeleteProject(id string) error {
 				S: aws.String(id),
 			},
 		},
-		TableName: aws.String(db.usersTableName),
+		TableName: aws.String(db.projectsTableName),
 	}
 
 	res, err := db.client.DeleteItem(input)
