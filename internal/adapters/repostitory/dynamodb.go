@@ -31,12 +31,17 @@ type dynamoDbClient struct {
 }
 
 func NewDynaDBRepository() ports.PortfolioRepository {
+	// Load portifolio environmental variables
+	loadEnv()
 	// Add AWS session for DynamoDB
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
+		// Provide SDK Config options, such as Region.
+		Config: aws.Config{
+			Region: aws.String(os.Getenv("AWS_DEFAULT_REGION")),
+		},
 	}))
-	// Load portifolio environmental variables
-	loadEnv()
+
 	var (
 		userTablename    = os.Getenv("DYNAMODB_USERS_TABLE")
 		projectTablename = os.Getenv("DYNAMODB_PROJECTS_TABLE")
