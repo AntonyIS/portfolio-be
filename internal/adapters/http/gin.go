@@ -211,7 +211,7 @@ func home(ctx *gin.Context) {
 	})
 }
 
-func InitGinRoutes() {
+func InitGinRoutes(port string) {
 	router := gin.Default()
 	// DynamoDB repository
 	repo := repostitory.NewDynaDBRepository()
@@ -219,7 +219,6 @@ func InitGinRoutes() {
 	svc := services.NewPortfolioService(&repo)
 	// Gin Route Handler
 	handler := NewGinHandler(*svc)
-
 	// Home route
 	router.GET("/", home)
 	// Users routes
