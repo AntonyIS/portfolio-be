@@ -13,7 +13,7 @@ import (
 	"net/http"
 
 	"github.com/AntonyIS/portfolio-be/config"
-	"github.com/AntonyIS/portfolio-be/internal/adapters/repostitory"
+	"github.com/AntonyIS/portfolio-be/internal/adapters/repository"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-gonic/gin"
@@ -218,7 +218,7 @@ func InitGinRoutes() {
 	// Load application configuration
 	config := config.NewConfiguration()
 	// DynamoDB repository
-	repo := repostitory.NewDynamoDBRepository(config)
+	repo := repository.NewDynamoDBRepository(config)
 	// Portifolio service
 	svc := services.NewPortfolioService(&repo)
 	// Gin Route Handler

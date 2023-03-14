@@ -6,7 +6,7 @@ Description :
 	- Host dynamoDb database specific methods
 */
 
-package repostitory
+package repository
 
 import (
 	"errors"
