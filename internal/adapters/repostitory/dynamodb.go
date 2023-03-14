@@ -11,9 +11,8 @@ package repostitory
 import (
 	"errors"
 	"fmt"
-	"log"
-	"os"
 
+	"github.com/AntonyIS/portfolio-be/config"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/ports"
 	"github.com/aws/aws-sdk-go/aws"
@@ -21,7 +20,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
-	"github.com/joho/godotenv"
 )
 
 type dynamoDbClient struct {
@@ -30,35 +28,17 @@ type dynamoDbClient struct {
 	projectsTableName string
 }
 
-func NewDynaDBRepository() ports.PortfolioRepository {
-	// Load portifolio environmental variables
-	loadEnv()
-	// Add AWS session for DynamoDB
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-		// Provide SDK Config options, such as Region.
-		Config: aws.Config{
-			Region: aws.String(os.Getenv("AWS_DEFAULT_REGION")),
-		},
+func NewDynaDBRepository(c *config.AppConfig) ports.PortfolioRepository {
+	fmt.Println(c.Region)
+	// Add credentials based on my AWS user Role Arn
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: aws.String(c.Region),
 	}))
-
-	var (
-		userTablename    = os.Getenv("DYNAMODB_USERS_TABLE")
-		projectTablename = os.Getenv("DYNAMODB_PROJECTS_TABLE")
-	)
 	return &dynamoDbClient{
 		client:            dynamodb.New(sess),
-		usersTableName:    userTablename,
-		projectsTableName: projectTablename,
+		usersTableName:    c.UsersTable,
+		projectsTableName: c.ProjectTable,
 	}
-}
-
-func loadEnv() error {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
-	}
-	return nil
 }
 
 func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {

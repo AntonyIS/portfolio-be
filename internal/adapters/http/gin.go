@@ -8,8 +8,10 @@ Description :
 package http
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/AntonyIS/portfolio-be/config"
 	"github.com/AntonyIS/portfolio-be/internal/adapters/repostitory"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
@@ -211,10 +213,14 @@ func home(ctx *gin.Context) {
 	})
 }
 
-func InitGinRoutes(port string) {
+func InitGinRoutes() {
+	// Load application configuration
+	config := config.NewConfiguration()
+	fmt.Println(config)
+	// Initilize Gin
 	router := gin.Default()
 	// DynamoDB repository
-	repo := repostitory.NewDynaDBRepository()
+	repo := repostitory.NewDynaDBRepository(config)
 	// Portifolio service
 	svc := services.NewPortfolioService(&repo)
 	// Gin Route Handler
@@ -241,5 +247,5 @@ func InitGinRoutes(port string) {
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
 
-	router.Run()
+	router.Run(fmt.Sprintf(":%s", config.Port))
 }
