@@ -28,8 +28,7 @@ type dynamoDbClient struct {
 	projectsTableName string
 }
 
-func NewDynaDBRepository(c *config.AppConfig) ports.PortfolioRepository {
-	fmt.Println(c.Region)
+func NewDynamoDBRepository(c *config.AppConfig) ports.PortfolioRepository {
 	// Add credentials based on my AWS user Role Arn
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(c.Region),

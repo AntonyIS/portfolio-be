@@ -4,6 +4,7 @@ File name : gin.go
 Author : Antony Injila
 Description :
 	- Host Go Gin webframework for handling HTTP requests
+	- Routes HTTP requests to thier respective handlers
 */
 package http
 
@@ -216,15 +217,14 @@ func home(ctx *gin.Context) {
 func InitGinRoutes() {
 	// Load application configuration
 	config := config.NewConfiguration()
-	fmt.Println(config)
-	// Initilize Gin
-	router := gin.Default()
 	// DynamoDB repository
-	repo := repostitory.NewDynaDBRepository(config)
+	repo := repostitory.NewDynamoDBRepository(config)
 	// Portifolio service
 	svc := services.NewPortfolioService(&repo)
 	// Gin Route Handler
 	handler := NewGinHandler(*svc)
+	// Initilize Gin
+	router := gin.Default()
 	// Home route
 	router.GET("/", home)
 	// Users routes
@@ -233,6 +233,7 @@ func InitGinRoutes() {
 	projectsRoutes := router.Group("/v1/projects")
 
 	{
+		// Group users routes
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUser)
 		usersRoutes.POST("/", handler.PostUser)
@@ -240,12 +241,13 @@ func InitGinRoutes() {
 		usersRoutes.DELETE("/:id", handler.DeleteUser)
 	}
 	{
+		// Group projects routes
 		projectsRoutes.GET("/", handler.GetProjects)
 		projectsRoutes.GET("/:id", handler.GetProject)
 		projectsRoutes.POST("/", handler.PostProject)
 		projectsRoutes.PUT("/:id", handler.PutProject)
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
-
+	// Run Gin web server
 	router.Run(fmt.Sprintf(":%s", config.Port))
 }
