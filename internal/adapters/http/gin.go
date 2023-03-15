@@ -11,9 +11,8 @@ package http
 import (
 	"fmt"
 	"net/http"
+	"os"
 
-	"github.com/AntonyIS/portfolio-be/config"
-	"github.com/AntonyIS/portfolio-be/internal/adapters/repository"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-gonic/gin"
@@ -214,15 +213,9 @@ func home(ctx *gin.Context) {
 	})
 }
 
-func InitGinRoutes() {
-	// Load application configuration
-	config := config.NewConfiguration()
-	// DynamoDB repository
-	repo := repository.NewDynamoDBRepository(config)
-	// Portifolio service
-	svc := services.NewPortfolioService(&repo)
+func InitGinRoutes(svc services.PortfolioService) {
 	// Gin Route Handler
-	handler := NewGinHandler(*svc)
+	handler := NewGinHandler(svc)
 	// Initilize Gin
 	router := gin.Default()
 	// Home route
@@ -248,6 +241,7 @@ func InitGinRoutes() {
 		projectsRoutes.PUT("/:id", handler.PutProject)
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
+	port := os.Getenv("SERVER_PORT")
 	// Run Gin web server
-	router.Run(fmt.Sprintf(":%s", config.Port))
+	router.Run(fmt.Sprintf(":%s", port))
 }

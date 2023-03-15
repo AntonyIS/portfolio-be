@@ -16,7 +16,6 @@ type AppConfig struct {
 }
 
 func NewConfiguration() *AppConfig {
-	// Add AWS session for DynamoDB
 	var (
 		userTablename    = os.Getenv("USERS_TABLE")
 		projectTablename = os.Getenv("PROJECTS_TABLE")

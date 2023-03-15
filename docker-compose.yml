@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  server:
+    image: ${IMAGE_NAME}
+    ports:
+      - "80:${SERVER_PORT}"
+  
