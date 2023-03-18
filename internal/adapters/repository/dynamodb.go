@@ -29,7 +29,6 @@ type dynamoDbClient struct {
 }
 
 func NewDynamoDBRepository(c *config.AppConfig) ports.PortfolioRepository {
-	// Add credentials based on my AWS user Role Arn
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(c.Region),
 	}))
