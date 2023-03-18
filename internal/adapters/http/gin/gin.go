@@ -21,9 +21,11 @@ func InitGinRoutes(svc services.PortfolioService) {
 	router := gin.Default()
 	usersRoutes := router.Group("/v1/users")
 	projectsRoutes := router.Group("/v1/projects")
+	router.GET("/", handler.Home)
+	router.GET("/login", handler.Login)
+	router.GET("/signup", handler.Signup)
 	usersRoutes.Use(handler.Authorize)
 	projectsRoutes.Use(handler.Authorize)
-	router.GET("/", home)
 	{
 		// Group users routes
 		usersRoutes.GET("/", handler.GetUsers)

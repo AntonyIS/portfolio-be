@@ -14,8 +14,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -31,7 +33,10 @@ type GinHandler interface {
 	GetProjects(ctx *gin.Context)
 	PutProject(ctx *gin.Context)
 	DeleteProject(ctx *gin.Context)
+	Home(ctx *gin.Context)
 	Authorize(ctx *gin.Context)
+	Login(ctx *gin.Context)
+	Signup(ctx *gin.Context)
 }
 
 type handler struct {
@@ -210,43 +215,92 @@ func (h handler) DeleteProject(ctx *gin.Context) {
 	})
 }
 
-func home(ctx *gin.Context) {
+func (h handler) Home(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"message": "Antony Injila Portfolio",
 	})
 }
-
-func (h handler) Authorize(c *gin.Context) {
-	tokenString, err := c.Cookie("Authorization")
-	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+func (h handler) Login(ctx *gin.Context) {
+	var user domain.User
+	if err := ctx.ShouldBind(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
 		return
 	}
+	dbUser, err := h.svc.ReadUser(user.Email)
+
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Invalid email or password",
+		})
+	}
+
+	if dbUser.Email == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid email or password",
+		})
+		return
+	}
+	if dbUser.CheckPasswordHarsh(dbUser.Password) {
+
+		tokenString, err := middleware.GenerateToken(user.Email)
+
+		if err != nil {
+			ctx.JSON(http.StatusNotFound, gin.H{
+				"error": err.Error(),
+			})
+		}
+		ctx.SetSameSite(http.SameSiteLaxMode)
+		ctx.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
+		ctx.JSON(http.StatusOK, gin.H{
+			"user": dbUser,
+		})
+
+	} else {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"error": "Invalid email or password",
+		})
+	}
+}
+func (h handler) Signup(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Signup",
+	})
+}
+
+func (h handler) Authorize(ctx *gin.Context) {
+	tokenString := ctx.Query("token")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
 		}
 		return []byte(os.Getenv("SECRET")), nil
 	})
+
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		userEmail := fmt.Sprintf("%s", claims["email"])
 		user, err := h.svc.ReadUser(userEmail)
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		if user.Email == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		c.Set("user", user)
-		c.Next()
+		ctx.Set("user", user)
+		ctx.Next()
 	} else {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 }
