@@ -220,6 +220,7 @@ func (h handler) Home(ctx *gin.Context) {
 		"message": "Antony Injila Portfolio",
 	})
 }
+
 func (h handler) Login(ctx *gin.Context) {
 	var user domain.User
 	if err := ctx.ShouldBind(&user); err != nil {
@@ -263,10 +264,43 @@ func (h handler) Login(ctx *gin.Context) {
 		})
 	}
 }
+
 func (h handler) Signup(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{
-		"message": "Signup",
-	})
+
+	var user domain.User
+	if err := ctx.ShouldBind(&user); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+	dbUser, err := h.svc.ReadUser(user.Email)
+
+	if dbUser.Email != "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	password, err := user.GenerateHashPassord()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "unable to harsh password",
+		})
+		return
+	}
+
+	user.Password = password
+	newUser, err := h.svc.CreateUser(&user)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to create user",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, newUser)
 }
 
 func (h handler) Authorize(ctx *gin.Context) {
