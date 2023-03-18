@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/AntonyIS/portfolio-be/config"
-	"github.com/AntonyIS/portfolio-be/internal/adapters/http"
+	"github.com/AntonyIS/portfolio-be/internal/adapters/http/gin"
 	"github.com/AntonyIS/portfolio-be/internal/adapters/repository"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 )
@@ -18,5 +18,5 @@ func main() {
 	// Portifolio service
 	svc := services.NewPortfolioService(&repo)
 	// Gin server
-	http.InitGinRoutes(*svc)
+	gin.InitGinRoutes(*svc)
 }

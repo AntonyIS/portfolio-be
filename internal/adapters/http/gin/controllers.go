@@ -6,16 +6,18 @@ Description :
 	- Host Go Gin webframework for handling HTTP requests
 	- Routes HTTP requests to thier respective handlers
 */
-package http
+package gin
 
 import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 )
 
 type GinHandler interface {
@@ -29,6 +31,7 @@ type GinHandler interface {
 	GetProjects(ctx *gin.Context)
 	PutProject(ctx *gin.Context)
 	DeleteProject(ctx *gin.Context)
+	Authorize(ctx *gin.Context)
 }
 
 type handler struct {
@@ -213,35 +216,37 @@ func home(ctx *gin.Context) {
 	})
 }
 
-func InitGinRoutes(svc services.PortfolioService) {
-	// Gin Route Handler
-	handler := NewGinHandler(svc)
-	// Initilize Gin
-	router := gin.Default()
-	// Home route
-	router.GET("/", home)
-	// Users routes
-	usersRoutes := router.Group("/v1/users")
-	// Projects Routes
-	projectsRoutes := router.Group("/v1/projects")
-
-	{
-		// Group users routes
-		usersRoutes.GET("/", handler.GetUsers)
-		usersRoutes.GET("/:id", handler.GetUser)
-		usersRoutes.POST("/", handler.PostUser)
-		usersRoutes.PUT("/:id", handler.PutUser)
-		usersRoutes.DELETE("/:id", handler.DeleteUser)
+func (h handler) Authorize(c *gin.Context) {
+	tokenString, err := c.Cookie("Authorization")
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
 	}
-	{
-		// Group projects routes
-		projectsRoutes.GET("/", handler.GetProjects)
-		projectsRoutes.GET("/:id", handler.GetProject)
-		projectsRoutes.POST("/", handler.PostProject)
-		projectsRoutes.PUT("/:id", handler.PutProject)
-		projectsRoutes.DELETE("/:id", handler.DeleteProject)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
+		}
+		return []byte(os.Getenv("SECRET")), nil
+	})
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		userEmail := fmt.Sprintf("%s", claims["email"])
+		user, err := h.svc.ReadUser(userEmail)
+		if err != nil {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		if user.Email == "" {
+			c.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		c.Set("user", user)
+		c.Next()
+	} else {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
 	}
-	port := os.Getenv("SERVER_PORT")
-	// Run Gin web server
-	router.Run(fmt.Sprintf(":%s", port))
 }

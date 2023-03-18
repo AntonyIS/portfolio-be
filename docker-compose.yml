@@ -3,5 +3,5 @@ services:
   server:
     image: 349088074840.dkr.ecr.me-south-1.amazonaws.com/demo:latest
     ports:
-      - "80:5000"
+      - "5000:5000"
   
