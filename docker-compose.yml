@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   server:
-    image: ${IMAGE_NAME}
+    image: 349088074840.dkr.ecr.me-south-1.amazonaws.com/demo:latest
     ports:
-      - "80:${SERVER_PORT}"
+      - "80:5000"
   
