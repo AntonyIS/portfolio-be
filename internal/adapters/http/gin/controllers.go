@@ -9,17 +9,15 @@ Description :
 package gin
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 )
 
 type GinHandler interface {
@@ -34,7 +32,6 @@ type GinHandler interface {
 	PutProject(ctx *gin.Context)
 	DeleteProject(ctx *gin.Context)
 	Home(ctx *gin.Context)
-	Authorize(ctx *gin.Context)
 	Login(ctx *gin.Context)
 	Signup(ctx *gin.Context)
 }
@@ -229,36 +226,31 @@ func (h handler) Login(ctx *gin.Context) {
 		})
 		return
 	}
-	dbUser, err := h.svc.ReadUser(user.Email)
+
+	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": "Invalid email or password",
 		})
-	}
-
-	if dbUser.Email == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid email or password",
-		})
 		return
 	}
-	if dbUser.CheckPasswordHarsh(dbUser.Password) {
 
+	if dbUser.CheckPasswordHarsh(user.Password) {
 		tokenString, err := middleware.GenerateToken(user.Email)
 
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
+			return
 		}
 		ctx.SetSameSite(http.SameSiteLaxMode)
-		ctx.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true)
-		ctx.JSON(http.StatusOK, gin.H{
-			"user": dbUser,
-		})
+		ctx.SetCookie("token", tokenString, 3600*24*30, "", "", false, true)
+		ctx.JSON(http.StatusOK, dbUser)
 
 	} else {
+
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": "Invalid email or password",
 		})
@@ -274,16 +266,18 @@ func (h handler) Signup(ctx *gin.Context) {
 		})
 		return
 	}
+
 	dbUser, err := h.svc.ReadUser(user.Email)
 
-	if dbUser.Email != "" {
+	if dbUser != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
+			"error": errors.New(fmt.Sprintf("user with exists in database: %s", err)),
 		})
 		return
 	}
 
 	password, err := user.GenerateHashPassord()
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "unable to harsh password",
@@ -301,40 +295,4 @@ func (h handler) Signup(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, newUser)
-}
-
-func (h handler) Authorize(ctx *gin.Context) {
-	tokenString := ctx.Query("token")
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
-		}
-		return []byte(os.Getenv("SECRET")), nil
-	})
-
-	if err != nil {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		userEmail := fmt.Sprintf("%s", claims["email"])
-		user, err := h.svc.ReadUser(userEmail)
-		if err != nil {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if user.Email == "" {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		ctx.Set("user", user)
-		ctx.Next()
-	} else {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
 }

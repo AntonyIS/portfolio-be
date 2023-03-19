@@ -13,6 +13,7 @@ import "github.com/AntonyIS/portfolio-be/internal/core/domain"
 type PortfolioService interface {
 	CreateUser(user *domain.User) (*domain.User, error)
 	ReadUser(id string) (*domain.User, error)
+	ReadUserWithEmail(email string) (*domain.User, error)
 	ReadUsers() ([]*domain.User, error)
 	UpdateUser(user *domain.User) (*domain.User, error)
 	DeleteUser(id string) error
@@ -26,6 +27,7 @@ type PortfolioService interface {
 type PortfolioRepository interface {
 	CreateUser(user *domain.User) (*domain.User, error)
 	ReadUser(id string) (*domain.User, error)
+	ReadUserWithEmail(email string) (*domain.User, error)
 	ReadUsers() ([]*domain.User, error)
 	UpdateUser(user *domain.User) (*domain.User, error)
 	DeleteUser(id string) error

@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-gonic/gin"
 )
@@ -19,15 +20,15 @@ import (
 func InitGinRoutes(svc services.PortfolioService) {
 	handler := NewGinHandler(svc)
 	router := gin.Default()
+	middleware := middleware.NewMiddleware(&svc)
 	usersRoutes := router.Group("/v1/users")
 	projectsRoutes := router.Group("/v1/projects")
 	router.GET("/", handler.Home)
-	router.GET("/login", handler.Login)
-	router.GET("/signup", handler.Signup)
-	usersRoutes.Use(handler.Authorize)
-	projectsRoutes.Use(handler.Authorize)
+	router.POST("/login", handler.Login)
+	router.POST("/signup", handler.Signup)
+	usersRoutes.Use(middleware.Authorize)
+	projectsRoutes.Use(middleware.Authorize)
 	{
-		// Group users routes
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUser)
 		usersRoutes.POST("/", handler.PostUser)
@@ -35,7 +36,7 @@ func InitGinRoutes(svc services.PortfolioService) {
 		usersRoutes.DELETE("/:id", handler.DeleteUser)
 	}
 	{
-		// Group projects routes
+
 		projectsRoutes.GET("/", handler.GetProjects)
 		projectsRoutes.GET("/:id", handler.GetProject)
 		projectsRoutes.POST("/", handler.PostProject)
@@ -43,6 +44,5 @@ func InitGinRoutes(svc services.PortfolioService) {
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
 	port := os.Getenv("SERVER_PORT")
-	// Run Gin web server
 	router.Run(fmt.Sprintf(":%s", port))
 }

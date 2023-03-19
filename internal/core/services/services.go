@@ -37,7 +37,10 @@ func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error)
 func (svc *PortfolioService) ReadUser(id string) (*domain.User, error) {
 	return svc.repo.ReadUser(id)
 }
+func (svc *PortfolioService) ReadUserWithEmail(email string) (*domain.User, error) {
 
+	return svc.repo.ReadUserWithEmail(email)
+}
 func (svc *PortfolioService) ReadUsers() ([]*domain.User, error) {
 	return svc.repo.ReadUsers()
 }

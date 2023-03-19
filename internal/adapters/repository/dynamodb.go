@@ -52,17 +52,18 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 	}
 
 	_, err = db.client.PutItem(input)
+
 	if err != nil {
 		return nil, err
 	}
 
-	user, err = db.ReadUser(user.Id)
+	user, err = db.ReadUserWithEmail(user.Email)
 	if err != nil {
 		return nil, err
 	}
+
 	return user, nil
 }
-
 func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 	result, err := db.client.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(db.usersTableName),
@@ -77,7 +78,33 @@ func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 		return nil, err
 	}
 	if result.Item == nil {
-		return nil, errors.New(fmt.Sprintf("user with id [ %s ] not found", id))
+		return nil, errors.New(fmt.Sprintf("user with email [ %s ] not found", id))
+	}
+	var user domain.User
+	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) {
+	result, err := db.client.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(db.usersTableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"email": {
+				S: aws.String(email),
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if result.Item == nil {
+		return nil, errors.New(fmt.Sprintf("user with email [ %s ] not found", email))
 	}
 	var user domain.User
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)

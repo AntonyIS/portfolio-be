@@ -2,26 +2,71 @@ package middleware
 
 import (
 	"fmt"
+	"net/http"
 	"os"
-	"strconv"
 	"time"
 
+	"github.com/AntonyIS/portfolio-be/internal/core/services"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
+type middleware struct {
+	svc *services.PortfolioService
+}
+
+func NewMiddleware(svc *services.PortfolioService) *middleware {
+	return &middleware{
+		svc: svc,
+	}
+}
+
 func GenerateToken(email string) (string, error) {
-	tokenLifeSpan, err := strconv.Atoi(os.Getenv("TOKENLIFESPAN"))
+	key := []byte(os.Getenv("SECRET_KEY"))
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["email"] = email
+	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+
+	tokenString, err := token.SignedString(key)
 
 	if err != nil {
-		return "", fmt.Errorf("token lifespan error: %s", err.Error())
+		return "", err
 	}
+	fmt.Println(tokenString)
+	return tokenString, nil
+}
 
-	claims := jwt.MapClaims{}
-	claims["authoization"] = true
-	claims["email"] = email
-	claims["exp"] = time.Now().Add(time.Minute * time.Duration(tokenLifeSpan)).Unix()
+func (m middleware) Authorize(ctx *gin.Context) {
+	tokenString := ctx.Query("token")
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
+		}
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
 
-	token := jwt.NewWithClaims(jwt.SigningMethodES256, claims)
-
-	return token.SignedString([]byte(os.Getenv("SECRET_KEY")))
+	if err != nil {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if float64(time.Now().Unix()) > claims["exp"].(float64) {
+			ctx.AbortWithStatus(http.StatusUnauthorized)
+			return
+		}
+		userEmail := fmt.Sprintf("%s", claims["email"])
+		user, err := m.svc.ReadUser(userEmail)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": err,
+			})
+			return
+		}
+		ctx.Set("user", user)
+		ctx.Next()
+	} else {
+		ctx.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
 }
