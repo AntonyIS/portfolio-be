@@ -154,7 +154,6 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 		users = append(users, &user)
 
 	}
-
 	return users, nil
 }
 

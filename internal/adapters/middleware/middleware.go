@@ -33,12 +33,13 @@ func GenerateToken(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(tokenString)
+
 	return tokenString, nil
 }
 
 func (m middleware) Authorize(ctx *gin.Context) {
-	tokenString := ctx.Query("token")
+	tokenString := ctx.GetHeader("token")
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
@@ -50,21 +51,23 @@ func (m middleware) Authorize(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		userEmail := fmt.Sprintf("%s", claims["email"])
-		user, err := m.svc.ReadUser(userEmail)
+		user, err := m.svc.ReadUserWithEmail(userEmail)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": err,
+				"error": err.Error(),
 			})
 			return
 		}
 		ctx.Set("user", user)
 		ctx.Next()
+		return
 	} else {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return

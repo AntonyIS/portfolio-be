@@ -88,7 +88,7 @@ func (h handler) GetUsers(ctx *gin.Context) {
 	users, err := h.svc.ReadUsers()
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"err": err.Error(),
+			"error": err.Error(),
 		})
 		return
 	}
