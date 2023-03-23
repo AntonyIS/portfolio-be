@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
 	"github.com/AntonyIS/portfolio-be/config"
 	"github.com/AntonyIS/portfolio-be/internal/adapters/http/gin"
@@ -10,17 +9,16 @@ import (
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 )
 
-var fg string
+var env string
 
 func init() {
 	config.LoadEnv()
-	flag.StringVar(&fg, "flagname", "Production", "The Environment the application is running")
+	flag.StringVar(&env, "Environment", "Production", "The Environment the application is running")
 }
 
 func main() {
 	// Load application configuration
-	fmt.Println(fg)
-	config := config.NewConfiguration(fg)
+	config := config.NewConfiguration(env)
 	// DynamoDB repository
 	repo := repository.NewDynamoDBRepository(config)
 	// Portifolio service

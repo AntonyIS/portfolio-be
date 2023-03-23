@@ -67,7 +67,6 @@ func (m middleware) Authorize(ctx *gin.Context) {
 		}
 		ctx.Set("user", user)
 		ctx.Next()
-		return
 	} else {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
