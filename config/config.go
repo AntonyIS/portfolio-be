@@ -27,6 +27,7 @@ func NewConfiguration(ENV string) *AppConfig {
 	case "Development":
 		userTablename = os.Getenv("TEST_USERS_TABLE")
 		projectTablename = os.Getenv("TEST_PROJECTS_TABLE")
+
 	case "Production":
 		userTablename = os.Getenv("USERS_TABLE")
 		projectTablename = os.Getenv("PROJECTS_TABLE")
