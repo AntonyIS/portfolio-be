@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/AntonyIS/portfolio-be/config"
@@ -14,7 +12,7 @@ func TestApplicationService(t *testing.T) {
 	config.LoadEnv()
 	env := "Production"
 	config := config.NewConfiguration(env)
-	fmt.Println(config)
+
 	repo := repository.NewDynamoDBRepository(config)
 	svc := NewPortfolioService(&repo)
 
@@ -25,11 +23,10 @@ func TestApplicationService(t *testing.T) {
 			Email:     "antonyshikubu@gmail.com",
 			Password:  "SuperPass@#@#$",
 		}
-		user, err := svc.repo.CreateUser(&newUser)
+		_, err := svc.repo.CreateUser(&newUser)
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Println(reflect.DeepEqual(newUser, user))
 
 	})
 }

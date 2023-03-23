@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -16,6 +17,7 @@ type AppConfig struct {
 }
 
 func NewConfiguration(ENV string) *AppConfig {
+
 	var (
 		serverPort       = os.Getenv("SERVER_PORT")
 		region           = os.Getenv("AWS_DEFAULT_REGION")
@@ -43,7 +45,8 @@ func NewConfiguration(ENV string) *AppConfig {
 }
 
 func LoadEnv() error {
-	err := godotenv.Load(".env")
+	err := godotenv.Load("env")
+	fmt.Println(os.Getenv("USERS_TABLE"))
 	if err != nil {
 		log.Fatal("Error loading .env file", err)
 	}
