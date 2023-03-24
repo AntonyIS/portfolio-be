@@ -61,7 +61,7 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return user, nil
 }
 func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
@@ -176,11 +176,11 @@ func (db *dynamoDbClient) UpdateUser(user *domain.User) (*domain.User, error) {
 	return user, nil
 }
 
-func (db *dynamoDbClient) DeleteUser(id string) error {
+func (db *dynamoDbClient) DeleteUser(email string) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(id),
+			"email": {
+				S: aws.String(email),
 			},
 		},
 		TableName: aws.String(db.usersTableName),
