@@ -176,6 +176,7 @@ func (h handler) GetProjects(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, projects)
+	return
 }
 
 func (h handler) PutProject(ctx *gin.Context) {
@@ -247,6 +248,8 @@ func (h handler) Login(ctx *gin.Context) {
 		}
 		ctx.SetSameSite(http.SameSiteLaxMode)
 		ctx.SetCookie("token", tokenString, 3600*24*30, "", "", false, true)
+		// ctx.Request.Header.Add("email", dbUser.Email)
+		// ctx.Request.Header.Add("user_id", dbUser.Id)
 		ctx.JSON(http.StatusOK, dbUser)
 
 	} else {

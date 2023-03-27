@@ -13,7 +13,7 @@ var env string
 
 func init() {
 	config.LoadEnv()
-	flag.StringVar(&env, "Environment", "Development", "The environment the application is running")
+	flag.StringVar(&env, "Environment", "dev", "The environment the application is running")
 }
 
 func main() {

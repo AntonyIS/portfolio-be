@@ -28,6 +28,8 @@ func InitGinRoutes(svc services.PortfolioService) {
 	router.POST("/signup", handler.Signup)
 	usersRoutes.Use(middleware.Authorize)
 	projectsRoutes.Use(middleware.Authorize)
+
+
 	{
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUser)

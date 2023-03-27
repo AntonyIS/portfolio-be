@@ -61,7 +61,7 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return user, nil
 }
 func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
@@ -108,6 +108,7 @@ func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) 
 	}
 	var user domain.User
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
+
 	if err != nil {
 		return nil, err
 	}
@@ -302,6 +303,7 @@ func (db *dynamoDbClient) UpdateProject(project *domain.Project) (*domain.Projec
 }
 
 func (db *dynamoDbClient) DeleteProject(id string) error {
+	fmt.Println("ID", id)
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
 			"id": {

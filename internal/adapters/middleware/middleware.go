@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
@@ -39,19 +40,16 @@ func GenerateToken(email string) (string, error) {
 
 func (m middleware) Authorize(ctx *gin.Context) {
 	tokenString := ctx.GetHeader("token")
-
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
 		}
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
-
 	if err != nil {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
-
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
@@ -65,7 +63,8 @@ func (m middleware) Authorize(ctx *gin.Context) {
 			})
 			return
 		}
-		ctx.Set("user", user)
+		ctx.Header("email", user.Email)
+		ctx.Header("id", user.Id)
 		ctx.Next()
 	} else {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
