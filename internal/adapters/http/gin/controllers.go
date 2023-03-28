@@ -292,7 +292,7 @@ func (h handler) Signup(ctx *gin.Context) {
 
 	user.Password = password
 	newUser, err := h.svc.CreateUser(&user)
-
+	
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to create user",

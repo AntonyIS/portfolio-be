@@ -1,10 +1,17 @@
 package config
 
 import (
+	"errors"
 	"log"
 	"os"
 
 	"github.com/joho/godotenv"
+)
+
+var (
+	ErrNotFound       = errors.New("item not found")
+	ErrInvalidItem    = errors.New("invalid item")
+	ErrInternalServer = errors.New("internal server error")
 )
 
 type AppConfig struct {
@@ -31,8 +38,8 @@ func NewConfiguration(ENV string) *AppConfig {
 	case "pro":
 		userTablename = os.Getenv("USERS_TABLE")
 		projectTablename = os.Getenv("PROJECTS_TABLE")
-	}
 
+	}
 	return &AppConfig{
 		Env:          ENV,
 		Port:         serverPort,

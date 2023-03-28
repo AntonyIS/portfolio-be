@@ -138,8 +138,7 @@ func TestApplicationService(t *testing.T) {
 		if err != nil {
 			t.Error(err)
 		}
-		fmt.Println("User::: ", user)
-		fmt.Println("ERROR::: ", newProject)
+		
 		if project.Title != newProject.Title || project.Body != newProject.Body || project.UserID != user.Id {
 			t.Error("New user does not match created user")
 		}
@@ -183,7 +182,7 @@ func TestApplicationService(t *testing.T) {
 			t.Error(err)
 		}
 		p := []*domain.User{}
-
+		fmt.Println(projects)
 		if !reflect.DeepEqual(reflect.TypeOf(projects), reflect.TypeOf(p)) {
 			t.Error(err)
 		}
