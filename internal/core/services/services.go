@@ -61,7 +61,7 @@ func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Pro
 	userID := project.UserID
 	user, err := svc.ReadUser(userID)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("User with ID %s not found", userID))
+		return nil, errors.New(fmt.Sprintf("User with id %s not found", userID))
 	}
 	if user.Projects == nil {
 		user.Projects = map[string]*domain.Project{

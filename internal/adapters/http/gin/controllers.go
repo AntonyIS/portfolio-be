@@ -137,6 +137,10 @@ func (h handler) PostProject(ctx *gin.Context) {
 		})
 		return
 	}
+	user_id := ctx.GetString("user_id")
+
+	project.UserID = user_id
+
 	res, err := h.svc.CreateProject(&project)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -238,6 +242,7 @@ func (h handler) Login(ctx *gin.Context) {
 	}
 
 	if dbUser.CheckPasswordHarsh(user.Password) {
+		middleware := middleware.NewMiddleware(&h.svc)
 		tokenString, err := middleware.GenerateToken(user.Email)
 
 		if err != nil {
@@ -248,9 +253,6 @@ func (h handler) Login(ctx *gin.Context) {
 		}
 		ctx.SetSameSite(http.SameSiteLaxMode)
 		ctx.SetCookie("token", tokenString, 3600*24*30, "", "", false, true)
-		// ctx.Request.Header.Add("email", dbUser.Email)
-		// ctx.Request.Header.Add("user_id", dbUser.Id)
-		ctx.JSON(http.StatusOK, dbUser)
 
 	} else {
 

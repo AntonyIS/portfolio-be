@@ -22,11 +22,17 @@ func NewMiddleware(svc *services.PortfolioService) *middleware {
 	}
 }
 
-func GenerateToken(email string) (string, error) {
+func (m middleware) GenerateToken(email string) (string, error) {
 	key := []byte(os.Getenv("SECRET_KEY"))
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
+	user, err := m.svc.ReadUserWithEmail(email)
+	if err != nil {
+		return "", err
+	}
+
 	claims["email"] = email
+	claims["user_id"] = user.Id
 	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
 
 	tokenString, err := token.SignedString(key)
@@ -55,16 +61,10 @@ func (m middleware) Authorize(ctx *gin.Context) {
 			ctx.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		userEmail := fmt.Sprintf("%s", claims["email"])
-		user, err := m.svc.ReadUserWithEmail(userEmail)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		ctx.Header("email", user.Email)
-		ctx.Header("id", user.Id)
+		email := fmt.Sprintf("%s", claims["email"])
+		user_id := fmt.Sprintf("%s", claims["user_id"])
+		ctx.Set("email", email)
+		ctx.Set("user_id", user_id)
 		ctx.Next()
 	} else {
 		ctx.AbortWithStatus(http.StatusUnauthorized)
