@@ -71,6 +71,7 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 
 	return user, nil
 }
+
 func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 	users, err := db.ReadUsers()
 	if err != nil {
@@ -78,11 +79,13 @@ func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 	}
 	for _, user := range users {
 		if user.Id == id {
+			fmt.Println(user)
 			return user, nil
 		}
 	}
 	return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", itemNotFound, err)), "adapters.repository.dynamodb.ReadUser")
 }
+
 func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) {
 	result, err := db.client.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(db.usersTableName),
@@ -109,6 +112,7 @@ func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) 
 
 	return &user, nil
 }
+
 func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 	users := []*domain.User{}
 	filt := expression.Name("Id").AttributeNotExists()
@@ -117,6 +121,7 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 		expression.Name("firstname"),
 		expression.Name("lastname"),
 		expression.Name("email"),
+		expression.Name("password"),
 		expression.Name("projects"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
@@ -150,6 +155,7 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 	}
 	return users, nil
 }
+
 func (db *dynamoDbClient) UpdateUser(user *domain.User) (*domain.User, error) {
 	entityParsed, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {

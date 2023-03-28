@@ -272,7 +272,7 @@ func (h handler) Signup(ctx *gin.Context) {
 		return
 	}
 
-	dbUser, err := h.svc.ReadUser(user.Email)
+	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
 
 	if dbUser != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -281,18 +281,15 @@ func (h handler) Signup(ctx *gin.Context) {
 		return
 	}
 
-	password, err := user.GenerateHashPassord()
-
-	if err != nil {
+	if err == nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "unable to harsh password",
+			"error": err.Error(),
 		})
 		return
 	}
 
-	user.Password = password
 	newUser, err := h.svc.CreateUser(&user)
-	
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "failed to create user",

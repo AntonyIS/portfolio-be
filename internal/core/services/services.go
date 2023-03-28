@@ -31,6 +31,7 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
 	user.Id = uuid.New().String()
 	user.GenerateHashPassord()
+
 	return svc.repo.CreateUser(user)
 }
 
@@ -60,6 +61,8 @@ func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Pro
 	project.CreateAt = time.Now().UTC().Unix()
 	userID := project.UserID
 	user, err := svc.ReadUser(userID)
+
+	fmt.Println(user)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("User with id %s not found", userID))
 	}
