@@ -1,7 +1,17 @@
-# portfolio-be
-This is the backend for my portfilio website.
-The backend exposes endpoints for application users and projects
-# Technology stack
+<img src="./assets/imgs/images.jpeg" alt="Logo of the project" align="right">
+
+# Portifolio Backend
+This is the backend for my portfilio website.This is a backend project that allow portifolio owners|users to show case thier software engineering skills.
+The backend is server with the Go programming language and the front end/client will be ReactJS
+
+## Installing / Getting started
+1. Ensure you have Git installed on your computer and clone this project using the below command.
+```
+git clone https://github.com/AntonyIS/portfolio-be.git
+```
+The project will be cloned into you machine
+
+## Technology stack
 *   Golang - Application runtime
 *   Go Gin - Go web application framework
 *   JWT - For authentication and resource authorization
@@ -12,23 +22,9 @@ The backend exposes endpoints for application users and projects
 # Application Architecture
 This application is made up of the Hexafonal(Ports and Adapter) architecture
 
-<img src="./images/logo.sample.png" alt="Logo of the project" align="right">
+<!-- ## Developing -->
 
-# Portifolio Backend
-This is the backend for my portfilio website.This is a backend project that allow portifolio owners|users to show case thier software engineering skills.
-The backend is server with the Go programming language and the front end/client will be ReactJS
-
-## Installing / Getting started
-1. Ensure you have Git and Github installed on your computer and clone this project using the below command.
-```
-git clone https://github.com/AntonyIS/portfolio-be.git
-```
-
-<!-- Here you should say what actually happens when you execute the code above.
-
-## Developing
-
-### Built With
+<!-- ### Built With
 List main libraries, frameworks used including versions (React, Angular etc...)
 
 ### Prerequisites
@@ -107,4 +103,4 @@ Documents your database design and schemas, relations etc...
 
 ## Licensing
 
-State what the license is and how to find the text version of the license. -->
+State what the license is and how to find the text version of the license. --> -->
