@@ -22,9 +22,42 @@ The project will be cloned into you machine
 # Application Architecture
 This application is made up of the Hexagonal(Ports and Adapter) architecture
 
+```.
+├── assets
+│   └── imgs
+│       └── images.jpeg
+├── bin
+│   └── portifolio-be
+├── config
+│   └── config.go
+├── docker-compose.yml
+├── Dockerfile
+├── go.mod
+├── go.sum
+├── internal
+│   ├── adapters
+│   │   ├── http
+│   │   │   └── gin
+│   │   │       ├── controllers.go
+│   │   │       └── gin.go
+│   │   ├── middleware
+│   │   │   └── middleware.go
+│   │   └── repository
+│   │       └── dynamodb.go
+│   └── core
+│       ├── domain
+│       │   └── domain.go
+│       ├── ports
+│       │   └── ports.go
+│       └── services
+│           ├── services.go
+│           └── service_test.go
+├── LICENSE
+├── main.go
+├── Makefile
+└── README.md
 
-
-
+```
 <!-- ## Developing -->
 
 <!-- ### Built With
