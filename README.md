@@ -20,7 +20,10 @@ The project will be cloned into you machine
 *   AWS Elasticbeanstalk for deployment to cloud
 
 # Application Architecture
-This application is made up of the Hexafonal(Ports and Adapter) architecture
+This application is made up of the Hexagonal(Ports and Adapter) architecture
+
+
+
 
 <!-- ## Developing -->
 
