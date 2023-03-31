@@ -58,7 +58,7 @@ This application is made up of the Hexagonal(Ports and Adapter) architecture
 └── README.md
 
 ```
-<!-- ## Developing -->
+<!-- ## Developing 
 
 <!-- ### Built With
 List main libraries, frameworks used including versions (React, Angular etc...)
@@ -66,12 +66,29 @@ List main libraries, frameworks used including versions (React, Angular etc...)
 ### Prerequisites
 What is needed to set up the dev environment. For instance, global dependencies or any other tools. include download links.
 
-
+-->
 ### Setting up Dev
-
-Here's a brief intro about what a developer must do in order to start developing
-the project further:
-
+* Clone the application
+```
+git clone https://github.com/AntonyIS/portfolio-be
+```
+* Navigate into the working directory
+```
+cd portfolio-be
+```
+* Tidy up the application: install dependancies
+```
+go mod tidy
+```
+* Run the application
+```
+make serve
+```
+* Run the tests
+```
+make test
+```
+<!-- 
 ```shell
 git clone https://github.com/your/your-project.git
 cd your-project/
