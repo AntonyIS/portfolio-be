@@ -29,7 +29,6 @@ func InitGinRoutes(svc services.PortfolioService) {
 	usersRoutes.Use(middleware.Authorize)
 	projectsRoutes.Use(middleware.Authorize)
 
-
 	{
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUser)

@@ -16,6 +16,7 @@ import (
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/ports"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type PortfolioService struct {
@@ -30,8 +31,11 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
 	user.Id = uuid.New().String()
-	user.GenerateHashPassord()
-
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	user.Password = string(hashedPassword)
 	return svc.repo.CreateUser(user)
 }
 
@@ -40,7 +44,6 @@ func (svc *PortfolioService) ReadUser(id string) (*domain.User, error) {
 }
 
 func (svc *PortfolioService) ReadUserWithEmail(email string) (*domain.User, error) {
-
 	return svc.repo.ReadUserWithEmail(email)
 }
 

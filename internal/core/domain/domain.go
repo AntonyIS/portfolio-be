@@ -30,14 +30,7 @@ type Project struct {
 	CreateAt int64  `json:"created_at"`
 }
 
-func (u User) GenerateHashPassord() error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	u.Password = string(hashedPassword)
-	return nil
-}
+
 
 func (u User) CheckPasswordHarsh(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
