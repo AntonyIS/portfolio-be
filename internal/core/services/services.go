@@ -55,8 +55,19 @@ func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error)
 	return svc.repo.UpdateUser(user)
 }
 
-func (svc *PortfolioService) DeleteUser(id string) error {
-	return svc.repo.DeleteUser(id)
+func (svc *PortfolioService) DeleteUser(email string) error {
+	user, err := svc.repo.ReadUserWithEmail(email)
+	if err != nil {
+		return err
+	}
+	userProjects := user.Projects
+	for _, project := range userProjects {
+		err = svc.repo.DeleteProject(project.Id)
+		if err != nil {
+			return err
+		}
+	}
+	return svc.repo.DeleteUser(email)
 }
 
 func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Project, error) {

@@ -117,6 +117,7 @@ func TestApplicationService(t *testing.T) {
 		}
 
 	})
+	
 
 	t.Run("Test create new project", func(t *testing.T) {
 		newUser := domain.User{
