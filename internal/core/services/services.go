@@ -102,5 +102,19 @@ func (svc *PortfolioService) UpdateProject(project *domain.Project) (*domain.Pro
 }
 
 func (svc *PortfolioService) DeleteProject(id string) error {
+	project, err := svc.repo.ReadProject(id)
+	if err != nil {
+		return err
+	}
+	user, err := svc.repo.ReadUser(project.UserID)
+	if err != nil {
+		return err
+	}
+	userProjects := user.Projects
+
+	if _, ok := userProjects[id]; ok {
+		delete(userProjects, id)
+	}
+
 	return svc.repo.DeleteProject(id)
 }
