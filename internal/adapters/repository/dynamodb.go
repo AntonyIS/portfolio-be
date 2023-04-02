@@ -79,7 +79,6 @@ func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
 	}
 	for _, user := range users {
 		if user.Id == id {
-			fmt.Println(user)
 			return user, nil
 		}
 	}
