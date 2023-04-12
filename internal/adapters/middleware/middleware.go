@@ -33,6 +33,8 @@ func (m middleware) GenerateToken(email string) (string, error) {
 
 	claims["email"] = email
 	claims["user_id"] = user.Id
+	claims["firstname"] = user.FirstName
+	claims["lastname"] = user.LastName
 	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
 
 	tokenString, err := token.SignedString(key)
@@ -63,8 +65,12 @@ func (m middleware) Authorize(ctx *gin.Context) {
 		}
 		email := fmt.Sprintf("%s", claims["email"])
 		user_id := fmt.Sprintf("%s", claims["user_id"])
+		firstname := fmt.Sprintf("%s", claims["firstname"])
+		lastname := fmt.Sprintf("%s", claims["lastname"])
 		ctx.Set("email", email)
 		ctx.Set("user_id", user_id)
+		ctx.Set("firstname", firstname)
+		ctx.Set("lastname", lastname)
 		ctx.Next()
 	} else {
 		ctx.AbortWithStatus(http.StatusUnauthorized)

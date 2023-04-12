@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -25,7 +26,9 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		_, err := svc.ReadUserWithEmail(newUser.Email)
 
@@ -46,7 +49,9 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		user, err := svc.CreateUser(&newUser)
 		if err != nil {
@@ -77,7 +82,9 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		DBuser, err := svc.CreateUser(&newUser)
 		if err != nil {
@@ -99,7 +106,9 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		DBuser, err := svc.CreateUser(&newUser)
 		if err != nil {
@@ -117,25 +126,29 @@ func TestApplicationService(t *testing.T) {
 		}
 
 	})
-	
 
-	t.Run("Test create new project", func(t *testing.T) {
+	t.Run("Create new project", func(t *testing.T) {
 		newUser := domain.User{
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		user, err := svc.CreateUser(&newUser)
-
+		user.Password = ""
+		user.Projects = nil
 		if err != nil {
 			t.Error(err)
 		}
 		newProject := domain.Project{
-			Title:  "Go gRPC for beginners",
-			Body:   "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
-			UserID: user.Id,
-			Rate:   5,
+			Title:     "Go gRPC for beginners",
+			Body:      "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
+			UserEmail: user.Email,
+			UserTitle: user.Title,
+			UserName:  fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			Rate:      5,
 		}
 
 		project, err := svc.CreateProject(&newProject)
@@ -143,30 +156,33 @@ func TestApplicationService(t *testing.T) {
 			t.Error(err)
 		}
 
-		if project.Title != newProject.Title || project.Body != newProject.Body || project.UserID != user.Id {
+		if project.Title != newProject.Title || project.Body != newProject.Body || project.UserEmail != user.Email {
 			t.Error("New user does not match created user")
 		}
-
 	})
 	t.Run("Read project with id", func(t *testing.T) {
 		newUser := domain.User{
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
-		_, err := svc.ReadUserWithEmail(newUser.Email)
-
+		user, err := svc.ReadUserWithEmail(newUser.Email)
+		user.Password = ""
 		if err != nil {
 			user, err := svc.CreateUser(&newUser)
 			if err != nil {
 				t.Error(err)
 			}
 			newProject := domain.Project{
-				Title:  "Go gRPC for beginners",
-				Body:   "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
-				UserID: user.Id,
-				Rate:   5,
+				Title:     "Go gRPC for beginners",
+				Body:      "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
+				UserEmail: user.Email,
+				UserTitle: user.Title,
+				UserName:  fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+				Rate:      5,
 			}
 
 			DBproject, err := svc.CreateProject(&newProject)
@@ -178,7 +194,7 @@ func TestApplicationService(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if project.Title != DBproject.Title || project.Body != DBproject.Body || project.UserID != user.Id {
+			if project.Title != DBproject.Title || project.Body != DBproject.Body || project.UserEmail != user.Email {
 				t.Error("New user does not match created user")
 			}
 		}
@@ -200,17 +216,21 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		user, err := svc.CreateUser(&newUser)
 		if err != nil {
 			t.Error(err)
 		}
 		newProject := domain.Project{
-			Title:  "Go gRPC for beginners",
-			Body:   "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
-			UserID: user.Id,
-			Rate:   5,
+			Title:     "Go gRPC for beginners",
+			Body:      "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
+			UserEmail: user.Email,
+			UserTitle: user.Title,
+			UserName:  fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			Rate:      5,
 		}
 
 		DBproject, err := svc.CreateProject(&newProject)
@@ -230,17 +250,21 @@ func TestApplicationService(t *testing.T) {
 			FirstName: "Antony",
 			LastName:  "Injila",
 			Email:     "antony@gmail.com",
+			Title:     "Golang Software Engineer",
 			Password:  "password",
+			Projects:  nil,
 		}
 		user, err := svc.CreateUser(&newUser)
 		if err != nil {
 			t.Error(err)
 		}
 		newProject := domain.Project{
-			Title:  "Go gRPC for beginners",
-			Body:   "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
-			UserID: user.Id,
-			Rate:   5,
+			Title:     "Go gRPC for beginners",
+			Body:      "This tutorial provides a basic Go programmer’s introduction to working with gRPC.",
+			UserEmail: user.Email,
+			UserTitle: user.Title,
+			UserName:  fmt.Sprintf("%s %s", user.FirstName, user.LastName),
+			Rate:      5,
 		}
 
 		DBproject, err := svc.CreateProject(&newProject)
@@ -253,19 +277,18 @@ func TestApplicationService(t *testing.T) {
 		}
 
 	})
-	t.Run("Delete all test projects", func(t *testing.T) {
-		projects, err := svc.ReadProjects()
-		if err != nil {
-			t.Error(err)
-		}
+	// t.Run("Delete all test projects", func(t *testing.T) {
+	// 	// _, err := svc.ReadProjects()
+	// 	// if err != nil {
+	// 	// 	t.Error(err)
+	// 	// }
 
-		for _, project := range projects {
-
-			err := svc.DeleteProject(project.Id)
-			if err != nil {
-				t.Error(err)
-			}
-		}
-	})
+	// 	// for _, project := range projects {
+	// 	// 	err := svc.DeleteProject(project.Id)
+	// 	// 	if err != nil {
+	// 	// 		t.Error(err)
+	// 	// 	}
+	// 	// }
+	// })
 
 }

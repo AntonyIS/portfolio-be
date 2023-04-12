@@ -60,8 +60,8 @@ func (svc *PortfolioService) DeleteUser(email string) error {
 	if err != nil {
 		return err
 	}
-	userProjects := user.Projects
-	for _, project := range userProjects {
+
+	for _, project := range user.Projects {
 		err = svc.repo.DeleteProject(project.Id)
 		if err != nil {
 			return err
@@ -73,11 +73,13 @@ func (svc *PortfolioService) DeleteUser(email string) error {
 func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Project, error) {
 	project.Id = uuid.New().String()
 	project.CreateAt = time.Now().UTC().Unix()
-	userID := project.UserID
-	user, err := svc.ReadUser(userID)
+	email := project.UserEmail
+	user, err := svc.ReadUserWithEmail(email)
+	project.UserTitle = user.Title
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("User with id %s not found", userID))
+		return nil, errors.New(fmt.Sprintf("User with id %s not found", email))
 	}
+
 	if user.Projects == nil {
 		user.Projects = map[string]*domain.Project{
 			project.Id: project,
@@ -85,6 +87,7 @@ func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Pro
 	} else {
 		user.Projects[project.Id] = project
 	}
+
 	svc.repo.UpdateUser(user)
 	return svc.repo.CreateProject(project)
 }
@@ -103,17 +106,18 @@ func (svc *PortfolioService) UpdateProject(project *domain.Project) (*domain.Pro
 
 func (svc *PortfolioService) DeleteProject(id string) error {
 	project, err := svc.repo.ReadProject(id)
-	if err != nil {
-		return err
-	}
-	user, err := svc.repo.ReadUser(project.UserID)
-	if err != nil {
-		return err
-	}
-	userProjects := user.Projects
 
-	if _, ok := userProjects[id]; ok {
-		delete(userProjects, id)
+	if err != nil {
+		return err
+	}
+	userEmail := project.UserEmail
+	user, err := svc.repo.ReadUserWithEmail(userEmail)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := user.Projects[id]; ok {
+		delete(user.Projects, id)
 	}
 
 	return svc.repo.DeleteProject(id)

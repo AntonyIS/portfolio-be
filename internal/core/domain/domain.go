@@ -17,20 +17,21 @@ type User struct {
 	FirstName string              `json:"firstname"`
 	LastName  string              `json:"lastname"`
 	Email     string              `json:"email"`
+	Title     string              `json:"title"`
 	Password  string              `json:"password"`
 	Projects  map[string]*Project `json:"projects"`
 }
 
 type Project struct {
-	Id       string `json:"id"`
-	Title    string `json:"title"`
-	Body     string `json:"body"`
-	UserID   string `json:"user_id"`
-	Rate     int    `json:"rate"`
-	CreateAt int64  `json:"created_at"`
+	Id        string `json:"id"`
+	Title     string `json:"title"`
+	Body      string `json:"body"`
+	UserName  string `json:"user_name"`
+	UserTitle string `json:"user_title"`
+	UserEmail string `json:"user_email"`
+	Rate      int    `json:"rate"`
+	CreateAt  int64  `json:"created_at"`
 }
-
-
 
 func (u User) CheckPasswordHarsh(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))

@@ -137,9 +137,12 @@ func (h handler) PostProject(ctx *gin.Context) {
 		})
 		return
 	}
-	user_id := ctx.GetString("user_id")
+	email := ctx.GetString("email")
+	firstname := ctx.GetString("firstname")
+	lastname := ctx.GetString("lastname")
 
-	project.UserID = user_id
+	project.UserEmail = email
+	project.UserName = fmt.Sprintf("%s %s", firstname, lastname)
 
 	res, err := h.svc.CreateProject(&project)
 	if err != nil {
