@@ -41,6 +41,11 @@ func TestApplicationService(t *testing.T) {
 			if user.Email != newUser.Email || user.FirstName != newUser.FirstName || user.LastName != newUser.LastName {
 				t.Error("New user does not match created user")
 			}
+
+			err = svc.DeleteUser(user.Email)
+			if err != nil {
+				t.Error(err)
+			}
 		}
 
 	})
@@ -277,18 +282,18 @@ func TestApplicationService(t *testing.T) {
 		}
 
 	})
-	// t.Run("Delete all test projects", func(t *testing.T) {
-	// 	// _, err := svc.ReadProjects()
-	// 	// if err != nil {
-	// 	// 	t.Error(err)
-	// 	// }
+	t.Run("Delete all test projects", func(t *testing.T) {
+		projects, err := svc.ReadProjects()
+		if err != nil {
+			t.Error(err)
+		}
 
-	// 	// for _, project := range projects {
-	// 	// 	err := svc.DeleteProject(project.Id)
-	// 	// 	if err != nil {
-	// 	// 		t.Error(err)
-	// 	// 	}
-	// 	// }
-	// })
+		for _, project := range projects {
+			err := svc.DeleteProject(project.Id)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+	})
 
 }
