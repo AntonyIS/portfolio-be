@@ -22,7 +22,8 @@ import (
 
 type GinHandler interface {
 	PostUser(ctx *gin.Context)
-	GetUser(ctx *gin.Context)
+	GetUserWithID(ctx *gin.Context)
+	GetUserWithEmail(ctx *gin.Context)
 	GetUsers(ctx *gin.Context)
 	PutUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
@@ -65,9 +66,29 @@ func (h handler) PostUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
-func (h handler) GetUser(ctx *gin.Context) {
+func (h handler) GetUserWithID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	user, err := h.svc.ReadUser(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"err": err.Error(),
+		})
+		return
+	}
+	if user == nil {
+		ctx.JSON(http.StatusNotFound, gin.H{
+			"message": "user not found",
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, user)
+	return
+}
+
+func (h handler) GetUserWithEmail(ctx *gin.Context) {
+	email := ctx.Param("email")
+	user, err := h.svc.ReadUserWithEmail(email)
+
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"err": err.Error(),
@@ -132,6 +153,7 @@ func (h handler) DeleteUser(ctx *gin.Context) {
 func (h handler) PostProject(ctx *gin.Context) {
 	var project domain.Project
 	if err := ctx.ShouldBindJSON(&project); err != nil {
+
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})

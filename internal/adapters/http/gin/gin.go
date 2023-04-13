@@ -19,7 +19,7 @@ import (
 func InitGinRoutes(svc services.PortfolioService) {
 	handler := NewGinHandler(svc)
 	router := gin.Default()
-	// middleware := middleware.NewMiddleware(&svc)
+	// middleware := middleware.NewMiddleware(&svc)z
 	usersRoutes := router.Group("/v1/users")
 	projectsRoutes := router.Group("/v1/projects")
 	router.GET("/", handler.Home)
@@ -30,7 +30,8 @@ func InitGinRoutes(svc services.PortfolioService) {
 
 	{
 		usersRoutes.GET("/", handler.GetUsers)
-		usersRoutes.GET("/:id", handler.GetUser)
+		usersRoutes.GET("/:email", handler.GetUserWithEmail)
+		usersRoutes.GET("/:id", handler.GetUserWithID)
 		usersRoutes.POST("/", handler.PostUser)
 		usersRoutes.PUT("/:id", handler.PutUser)
 		usersRoutes.DELETE("/:id", handler.DeleteUser)

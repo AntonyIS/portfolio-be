@@ -3,7 +3,6 @@ package gin
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -50,19 +49,44 @@ func TestApplicationRoutes(t *testing.T) {
 		r.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusCreated, w.Code)
 	})
-	t.Run("Gin Read user with email", func(t *testing.T) {
+	t.Run("Gin Read all user", func(t *testing.T) {
 		r := SetUpRouter()
-		email := "marco@gmail.com"
-		url := fmt.Sprintf("/v1/users/%s", email)
-		r.GET(url, handler.GetUser)
-
-		req, _ := http.NewRequest("GET", url, nil)
+		r.GET("/v1/users", handler.GetUsers)
+		req, _ := http.NewRequest("GET", "/v1/users", nil)
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusOK, w.Code)
 
-		var user *domain.User
-		json.Unmarshal(w.Body.Bytes(), user)
-		fmt.Println(user)
+	})
+
+	t.Run("Gin Read user with email", func(t *testing.T) {
+		r := SetUpRouter()
+		r.GET("/v1/users/:email", handler.GetUserWithEmail)
+		req, _ := http.NewRequest("GET", "/v1/users/marco@gmail.com", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		var user domain.User
+
+		json.Unmarshal(w.Body.Bytes(), &user)
+		if user.Email != "marco@gmail.com" {
+			t.Errorf("User with email %s does not match email marco@gmail.com", user.Email)
+		}
+		assert.Equal(t, http.StatusOK, w.Code)
+
+	})
+
+	t.Run("Gin Read user with id", func(t *testing.T) {
+		r := SetUpRouter()
+		r.GET("/v1/users/:id", handler.GetUserWithID)
+		req, _ := http.NewRequest("GET", "/v1/users/marco@gmail.com", nil)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		var user domain.User
+
+		json.Unmarshal(w.Body.Bytes(), &user)
+		if user.Email != "marco@gmail.com" {
+			t.Errorf("User with email %s does not match email marco@gmail.com", user.Email)
+		}
 		assert.Equal(t, http.StatusOK, w.Code)
 
 	})
