@@ -22,7 +22,7 @@ The project will be cloned into you machine
 # Application Architecture
 This application is made up of the Hexagonal(Ports and Adapter) architecture
 
-```.
+```
 ├── assets
 │   └── imgs
 │       └── images.jpeg

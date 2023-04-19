@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   server:
-    image: 349088074840.dkr.ecr.me-south-1.amazonaws.com/demo:latest
+    build: .
     ports:
-      - "5000:5000"
+      - "8000:8000"
   
