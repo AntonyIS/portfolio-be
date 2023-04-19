@@ -69,8 +69,9 @@ func (h handler) PostUser(ctx *gin.Context) {
 func (h handler) GetUserWithID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	user, err := h.svc.ReadUser(id)
+	fmt.Println(err)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"err": err.Error(),
 		})
 		return

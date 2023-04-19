@@ -20,32 +20,41 @@ type AppConfig struct {
 	UsersTable   string
 	ProjectTable string
 	Region       string
+	Testing      bool
 }
 
-func NewConfiguration(ENV string) *AppConfig {
+func NewConfiguration(Env string) *AppConfig {
 
 	var (
 		serverPort       = os.Getenv("SERVER_PORT")
 		region           = os.Getenv("AWS_DEFAULT_REGION")
 		userTablename    = ""
 		projectTablename = ""
+		testing          = false
 	)
-	switch ENV {
+	switch Env {
+
 	case "dev":
-		userTablename = os.Getenv("TEST_USERS_TABLE")
-		projectTablename = os.Getenv("TEST_PROJECTS_TABLE")
+		userTablename = os.Getenv("USERS_TABLE")
+		projectTablename = os.Getenv("PROJECTS_TABLE")
+		testing = true
 
 	case "pro":
 		userTablename = os.Getenv("USERS_TABLE")
 		projectTablename = os.Getenv("PROJECTS_TABLE")
+		testing = false
 
+	default:
+		userTablename = os.Getenv("USERS_TABLE")
+		projectTablename = os.Getenv("PROJECTS_TABLE")
 	}
 	return &AppConfig{
-		Env:          ENV,
+		Env:          Env,
 		Port:         serverPort,
 		UsersTable:   userTablename,
 		ProjectTable: projectTablename,
 		Region:       region,
+		Testing:      testing,
 	}
 }
 

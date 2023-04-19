@@ -3,6 +3,7 @@ package gin
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -75,19 +76,15 @@ func TestApplicationRoutes(t *testing.T) {
 
 	})
 
-	t.Run("Gin Read user with id", func(t *testing.T) {
+	t.Run("Gin Read user with non existing id", func(t *testing.T) {
 		r := SetUpRouter()
 		r.GET("/v1/users/:id", handler.GetUserWithID)
-		req, _ := http.NewRequest("GET", "/v1/users/marco@gmail.com", nil)
+		req, _ := http.NewRequest("GET", "/v1/users/1234ewe", nil)
 		w := httptest.NewRecorder()
 		r.ServeHTTP(w, req)
-		var user domain.User
 
-		json.Unmarshal(w.Body.Bytes(), &user)
-		if user.Email != "marco@gmail.com" {
-			t.Errorf("User with email %s does not match email marco@gmail.com", user.Email)
-		}
-		assert.Equal(t, http.StatusOK, w.Code)
+		fmt.Println(http.StatusNotFound, w.Code)
+		assert.Equal(t, http.StatusNotFound, w.Code)
 
 	})
 

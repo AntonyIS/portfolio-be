@@ -13,12 +13,13 @@ var env string
 
 func init() {
 	config.LoadEnv()
-	flag.StringVar(&env, "Environment", "dev", "The environment the application is running")
+	flag.StringVar(&env, "env", "dev", "The environment the application is running")
 }
 
 func main() {
+	flag.Parse()
 	config := config.NewConfiguration(env)
 	repo := repository.NewDynamoDBRepository(config)
 	svc := services.NewPortfolioService(&repo)
-	gin.InitGinRoutes(*svc)
+	gin.InitGinRoutes(*svc, *config)
 }

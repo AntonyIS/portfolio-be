@@ -12,32 +12,37 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/AntonyIS/portfolio-be/config"
+	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-gonic/gin"
 )
 
-func InitGinRoutes(svc services.PortfolioService) {
+func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 	handler := NewGinHandler(svc)
 	router := gin.Default()
-	// middleware := middleware.NewMiddleware(&svc)z
+
 	usersRoutes := router.Group("/v1/users")
 	projectsRoutes := router.Group("/v1/projects")
+
 	router.GET("/", handler.Home)
 	router.POST("/login", handler.Login)
 	router.POST("/signup", handler.Signup)
-	// usersRoutes.Use(middleware.Authorize)
-	// projectsRoutes.Use(middleware.Authorize)
+
+	if config.Env == "pro" {
+		middleware := middleware.NewMiddleware(&svc)
+		usersRoutes.Use(middleware.Authorize)
+		projectsRoutes.Use(middleware.Authorize)
+	}
 
 	{
 		usersRoutes.GET("/", handler.GetUsers)
-		usersRoutes.GET("/:email", handler.GetUserWithEmail)
 		usersRoutes.GET("/:id", handler.GetUserWithID)
 		usersRoutes.POST("/", handler.PostUser)
 		usersRoutes.PUT("/:id", handler.PutUser)
 		usersRoutes.DELETE("/:id", handler.DeleteUser)
 	}
 	{
-
 		projectsRoutes.GET("/", handler.GetProjects)
 		projectsRoutes.GET("/:id", handler.GetProject)
 		projectsRoutes.POST("/", handler.PostProject)
