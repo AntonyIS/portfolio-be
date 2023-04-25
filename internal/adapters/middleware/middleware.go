@@ -46,8 +46,8 @@ func (m middleware) GenerateToken(email string) (string, error) {
 	return tokenString, nil
 }
 
-func (m middleware) Authorize(ctx *gin.Context) {
-	tokenString := ctx.GetHeader("token")
+func (m middleware) Authorize(c *gin.Context) {
+	tokenString := c.GetHeader("token")
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["sub"])
@@ -55,25 +55,29 @@ func (m middleware) Authorize(ctx *gin.Context) {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			ctx.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
 		email := fmt.Sprintf("%s", claims["email"])
 		user_id := fmt.Sprintf("%s", claims["user_id"])
 		firstname := fmt.Sprintf("%s", claims["firstname"])
 		lastname := fmt.Sprintf("%s", claims["lastname"])
-		ctx.Set("email", email)
-		ctx.Set("user_id", user_id)
-		ctx.Set("firstname", firstname)
-		ctx.Set("lastname", lastname)
-		ctx.Next()
+		c.Set("email", email)
+		c.Set("user_id", user_id)
+		c.Set("firstname", firstname)
+		c.Set("lastname", lastname)
+
+		// Add CORS headers
+		c.Header("Access-Control-Allow-Origin", "http://localhost:3000/")
+		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
+		c.Next()
 	} else {
-		ctx.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 }

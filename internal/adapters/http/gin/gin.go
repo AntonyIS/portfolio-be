@@ -15,6 +15,8 @@ import (
 	"github.com/AntonyIS/portfolio-be/config"
 	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
+	"github.com/gin-contrib/cors"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,6 +30,8 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 	router.GET("/", handler.Home)
 	router.POST("/login", handler.Login)
 	router.POST("/signup", handler.Signup)
+
+	router.Use(cors.Default())
 
 	if config.Env == "pro" {
 		middleware := middleware.NewMiddleware(&svc)
