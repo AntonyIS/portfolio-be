@@ -259,6 +259,7 @@ func (h handler) Login(ctx *gin.Context) {
 	}
 
 	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
+
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": "Invalid email or password",
@@ -274,6 +275,7 @@ func (h handler) Login(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
+
 			return
 		}
 		ctx.SetSameSite(http.SameSiteLaxMode)

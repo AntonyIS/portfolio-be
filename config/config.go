@@ -32,6 +32,7 @@ func NewConfiguration(Env string) *AppConfig {
 		projectTablename = ""
 		testing          = false
 	)
+
 	switch Env {
 
 	case "dev":

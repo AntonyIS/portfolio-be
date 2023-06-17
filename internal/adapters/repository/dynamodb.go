@@ -11,11 +11,13 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/AntonyIS/portfolio-be/config"
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
 	"github.com/AntonyIS/portfolio-be/internal/core/ports"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
@@ -36,9 +38,13 @@ type dynamoDbClient struct {
 }
 
 func NewDynamoDBRepository(c *config.AppConfig) ports.PortfolioRepository {
+	creds := credentials.NewStaticCredentials(os.Getenv("AWS_ACCESS_KEY_ID"), os.Getenv("AWS_SECRET_ACCESS_KEY"), "")
+
 	sess := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(c.Region),
+		Region:      aws.String(c.Region),
+		Credentials: creds,
 	}))
+
 	return &dynamoDbClient{
 		client:            dynamodb.New(sess),
 		usersTableName:    c.UsersTable,
@@ -94,7 +100,7 @@ func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) 
 			},
 		},
 	})
-
+	
 	if err != nil {
 		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadUserWithEmail")
 	}
