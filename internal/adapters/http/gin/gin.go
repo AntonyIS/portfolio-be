@@ -21,24 +21,36 @@ import (
 )
 
 func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
-	handler := NewGinHandler(svc)
+	// Enable detailed error responses
+	gin.SetMode(gin.DebugMode)
+
+	// Setup Gin router
 	router := gin.Default()
 
-	usersRoutes := router.Group("/v1/users")
-	projectsRoutes := router.Group("/v1/projects")
-
-	router.GET("/", handler.Home)
-	router.POST("/login", handler.Login)
-	router.POST("/signup", handler.Signup)
-
+	// Configure CORS middleware to allow all origins, methods, and headers
+	// This will change in the future, restrict origin and headers
 	router.Use(cors.Default())
 
+	// Setup application route handlers
+	handler := NewGinHandler(svc)
+
+	router.GET("/", handler.Home)
+	router.POST("/api/login", handler.Login)
+	router.POST("/api/signup", handler.Signup)
+
+	// Group users API
+	usersRoutes := router.Group("/v1/users")
+
+	// Group projects API
+	projectsRoutes := router.Group("/v1/projects")
+
+	// Add middleware in production
 	if config.Env == "pro" {
 		middleware := middleware.NewMiddleware(&svc)
 		usersRoutes.Use(middleware.Authorize)
 		projectsRoutes.Use(middleware.Authorize)
-	}
-
+	} 
+		
 	{
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUserWithID)
@@ -53,6 +65,9 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 		projectsRoutes.PUT("/:id", handler.PutProject)
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
-	port := os.Getenv("SERVER_PORT")
-	router.Run(fmt.Sprintf(":%s", port))
+	
+
+	port := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
+
+	router.Run(port)
 }

@@ -42,7 +42,6 @@ func (m middleware) GenerateToken(email string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	return tokenString, nil
 }
 
@@ -71,10 +70,6 @@ func (m middleware) Authorize(c *gin.Context) {
 		c.Set("user_id", user_id)
 		c.Set("firstname", firstname)
 		c.Set("lastname", lastname)
-
-		// Add CORS headers
-		c.Header("Access-Control-Allow-Origin", "http://localhost:3000/")
-		c.Header("Access-Control-Allow-Methods", "PUT, POST, GET, DELETE, OPTIONS")
 		c.Next()
 	} else {
 		c.AbortWithStatus(http.StatusUnauthorized)

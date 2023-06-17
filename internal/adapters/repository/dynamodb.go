@@ -120,7 +120,6 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 		expression.Name("firstname"),
 		expression.Name("lastname"),
 		expression.Name("email"),
-		expression.Name("password"),
 		expression.Name("projects"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()

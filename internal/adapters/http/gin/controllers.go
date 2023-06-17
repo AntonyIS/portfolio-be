@@ -259,7 +259,6 @@ func (h handler) Login(ctx *gin.Context) {
 	}
 
 	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
-
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": "Invalid email or password",
@@ -279,6 +278,11 @@ func (h handler) Login(ctx *gin.Context) {
 		}
 		ctx.SetSameSite(http.SameSiteLaxMode)
 		ctx.SetCookie("token", tokenString, 3600*24*30, "", "", false, true)
+
+		ctx.JSON(http.StatusOK, gin.H{
+			"access_token": tokenString,
+		})
+		return
 
 	} else {
 
