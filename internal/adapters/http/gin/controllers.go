@@ -9,7 +9,6 @@ Description :
 package gin
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -306,27 +305,31 @@ func (h handler) Signup(ctx *gin.Context) {
 
 	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
 
-	if dbUser != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": errors.New(fmt.Sprintf("user with exists in database: %s", err)),
-		})
+	if dbUser != nil  {
+		newUser, err := h.svc.CreateUser(&user)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		ctx.JSON(http.StatusCreated, newUser)
 		return
 	}
 
-	if err == nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
+
 	}
 
-	newUser, err := h.svc.CreateUser(&user)
-
-	if err != nil {
+	if dbUser.Email != "" && dbUser.FirstName != "" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "failed to create user",
+			"error": "user with email exists",
 		})
 		return
 	}
-	ctx.JSON(http.StatusOK, newUser)
+
 }

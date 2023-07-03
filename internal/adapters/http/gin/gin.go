@@ -33,24 +33,23 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 
 	// Setup application route handlers
 	handler := NewGinHandler(svc)
-
 	router.GET("/", handler.Home)
-	router.POST("/api/login", handler.Login)
-	router.POST("/api/signup", handler.Signup)
+	router.POST("/api/v1/login", handler.Login)
+	router.POST("/api/v1/signup", handler.Signup)
 
 	// Group users API
-	usersRoutes := router.Group("/v1/users")
+	usersRoutes := router.Group("/api/v1/users")
 
 	// Group projects API
-	projectsRoutes := router.Group("/v1/projects")
+	projectsRoutes := router.Group("/api/v1/projects")
 
 	// Add middleware in production
 	if config.Env == "pro" {
 		middleware := middleware.NewMiddleware(&svc)
 		usersRoutes.Use(middleware.Authorize)
 		projectsRoutes.Use(middleware.Authorize)
-	} 
-		
+	}
+
 	{
 		usersRoutes.GET("/", handler.GetUsers)
 		usersRoutes.GET("/:id", handler.GetUserWithID)
@@ -65,7 +64,6 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 		projectsRoutes.PUT("/:id", handler.PutProject)
 		projectsRoutes.DELETE("/:id", handler.DeleteProject)
 	}
-	
 
 	port := fmt.Sprintf(":%s", os.Getenv("SERVER_PORT"))
 

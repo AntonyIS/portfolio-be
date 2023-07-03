@@ -10,7 +10,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
@@ -30,12 +29,17 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 }
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
+	foundUser, _ := svc.ReadUserWithEmail(user.Email)
+	if foundUser != nil {
+		return nil, errors.New("User with email exists!")
+	}
 	user.Id = uuid.New().String()
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
 	user.Password = string(hashedPassword)
+
 	return svc.repo.CreateUser(user)
 }
 
@@ -75,18 +79,12 @@ func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Pro
 	project.CreateAt = time.Now().UTC().Unix()
 	email := project.UserEmail
 	user, err := svc.ReadUserWithEmail(email)
-	project.UserTitle = user.Title
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("User with id %s not found", email))
+		return nil, err
 	}
+	project.UserTitle = user.Title
 
-	if user.Projects == nil {
-		user.Projects = map[string]*domain.Project{
-			project.Id: project,
-		}
-	} else {
-		user.Projects[project.Id] = project
-	}
+	user.Projects = append(user.Projects, project)
 
 	svc.repo.UpdateUser(user)
 	return svc.repo.CreateProject(project)
@@ -112,13 +110,22 @@ func (svc *PortfolioService) DeleteProject(id string) error {
 	}
 	userEmail := project.UserEmail
 	user, err := svc.repo.ReadUserWithEmail(userEmail)
+
 	if err != nil {
 		return err
 	}
 
-	if _, ok := user.Projects[id]; ok {
-		delete(user.Projects, id)
+	for index, item := range user.Projects {
+		if item.Id == id {
+			user.Projects = append(user.Projects[:index], user.Projects[index+1:]...)
+			_, err := svc.repo.UpdateUser(user)
+
+			if err != nil {
+				return err
+			}
+			return svc.DeleteProject(id)
+		}
 	}
 
-	return svc.repo.DeleteProject(id)
+	return errors.New("Internal server error: Unable to delete project")
 }

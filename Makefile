@@ -1,7 +1,7 @@
 build:
 	go build -o bin/portifolio-be
 
-serve-pro: build
+serve: build
 	./bin/portifolio-be -env=pro
 
 serve-dev: build
