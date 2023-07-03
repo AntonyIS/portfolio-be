@@ -12,11 +12,11 @@ import (
 
 func TestApplicationService(t *testing.T) {
 	config := &config.AppConfig{
-		Env:          "Dev",
-		Port:         "3000",
-		UsersTable:   "Authors",
-		ProjectTable: "Projects",
-		Region:       "me-south-1",
+		Env:              "Dev",
+		Port:             "3000",
+		UsersTable:       "Authors",
+		ProjectTable:     "Projects",
+		AWSDefaultRegion: "me-south-1",
 	}
 	repo := repository.NewDynamoDBRepository(config)
 	svc := NewPortfolioService(&repo)
