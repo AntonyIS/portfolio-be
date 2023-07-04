@@ -29,15 +29,26 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 }
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
-	foundUser, _ := svc.ReadUserWithEmail(user.Email)
-	if foundUser != nil {
-		return nil, errors.New("User with email exists!")
+	// Check if user already exist in the database
+	// Get all users
+	users, err := svc.repo.ReadUsers()
+	if err != nil {
+		return nil, err
+	}
+	// Loop through current users and search for user with email
+	for _, item := range users {
+		if item.Email == user.Email {
+			// User found, return error message
+			return nil, errors.New("user with email exists!")
+		}
 	}
 	user.Id = uuid.New().String()
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
+
 	user.Password = string(hashedPassword)
 
 	return svc.repo.CreateUser(user)
@@ -48,7 +59,16 @@ func (svc *PortfolioService) ReadUser(id string) (*domain.User, error) {
 }
 
 func (svc *PortfolioService) ReadUserWithEmail(email string) (*domain.User, error) {
-	return svc.repo.ReadUserWithEmail(email)
+	users, err := svc.repo.ReadUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		if user.Email == email {
+			return user, nil
+		}
+	}
+	return nil, errors.New("user with id not found!")
 }
 
 func (svc *PortfolioService) ReadUsers() ([]*domain.User, error) {
@@ -59,34 +79,27 @@ func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error)
 	return svc.repo.UpdateUser(user)
 }
 
-func (svc *PortfolioService) DeleteUser(email string) error {
-	user, err := svc.repo.ReadUserWithEmail(email)
-	if err != nil {
-		return err
-	}
-
-	for _, project := range user.Projects {
-		err = svc.repo.DeleteProject(project.Id)
-		if err != nil {
-			return err
-		}
-	}
-	return svc.repo.DeleteUser(email)
+func (svc *PortfolioService) DeleteUser(id string) error {
+	return svc.repo.DeleteUser(id)
 }
 
 func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Project, error) {
+	// Create Project ID
 	project.Id = uuid.New().String()
+	// Create project created at timestamp
 	project.CreateAt = time.Now().UTC().Unix()
-	email := project.UserEmail
-	user, err := svc.ReadUserWithEmail(email)
+	// Get the id of the user
+	userID := project.UserID
+	// Get user with id
+	user, err := svc.ReadUser(userID)
 	if err != nil {
 		return nil, err
 	}
-	project.UserTitle = user.Title
-
+	// Add the new project to user
 	user.Projects = append(user.Projects, project)
-
+	// Save the new changes for user
 	svc.repo.UpdateUser(user)
+	// Add the new project into the database
 	return svc.repo.CreateProject(project)
 }
 
@@ -103,26 +116,32 @@ func (svc *PortfolioService) UpdateProject(project *domain.Project) (*domain.Pro
 }
 
 func (svc *PortfolioService) DeleteProject(id string) error {
+	// Get the project to delete
 	project, err := svc.repo.ReadProject(id)
 
 	if err != nil {
 		return err
 	}
-	userEmail := project.UserEmail
-	user, err := svc.repo.ReadUserWithEmail(userEmail)
+	// Get the user ID from the project
+	userID := project.UserID
+	// Get user with the userID
+	user, err := svc.repo.ReadUser(userID)
 
 	if err != nil {
 		return err
 	}
-
+	// Loop through current project of the user and get the project to delete
 	for index, item := range user.Projects {
 		if item.Id == id {
+			// Delete project from user projects list
 			user.Projects = append(user.Projects[:index], user.Projects[index+1:]...)
+			// Update the user
 			_, err := svc.repo.UpdateUser(user)
 
 			if err != nil {
 				return err
 			}
+			// Delete the project from the database
 			return svc.DeleteProject(id)
 		}
 	}

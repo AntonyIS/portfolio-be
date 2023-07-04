@@ -52,7 +52,7 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 
 	{
 		usersRoutes.GET("/", handler.GetUsers)
-		usersRoutes.GET("/:id", handler.GetUserWithID)
+		usersRoutes.GET("/:id", handler.GetUser)
 		usersRoutes.POST("/", handler.PostUser)
 		usersRoutes.PUT("/:id", handler.PutUser)
 		usersRoutes.DELETE("/:id", handler.DeleteUser)

@@ -21,8 +21,7 @@ import (
 
 type GinHandler interface {
 	PostUser(ctx *gin.Context)
-	GetUserWithID(ctx *gin.Context)
-	GetUserWithEmail(ctx *gin.Context)
+	GetUser(ctx *gin.Context)
 	GetUsers(ctx *gin.Context)
 	PutUser(ctx *gin.Context)
 	DeleteUser(ctx *gin.Context)
@@ -65,32 +64,12 @@ func (h handler) PostUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
-func (h handler) GetUserWithID(ctx *gin.Context) {
+func (h handler) GetUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	user, err := h.svc.ReadUser(id)
-	fmt.Println(err)
-	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"err": err.Error(),
-		})
-		return
-	}
-	if user == nil {
-		ctx.JSON(http.StatusNotFound, gin.H{
-			"message": "user not found",
-		})
-		return
-	}
-	ctx.JSON(http.StatusOK, user)
-	return
-}
-
-func (h handler) GetUserWithEmail(ctx *gin.Context) {
-	email := ctx.Param("email")
-	user, err := h.svc.ReadUserWithEmail(email)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusNotFound, gin.H{
 			"err": err.Error(),
 		})
 		return
@@ -159,11 +138,11 @@ func (h handler) PostProject(ctx *gin.Context) {
 		})
 		return
 	}
-	email := ctx.GetString("email")
+	id := ctx.GetString("id")
 	firstname := ctx.GetString("firstname")
 	lastname := ctx.GetString("lastname")
 
-	project.UserEmail = email
+	project.UserID = id
 	project.UserName = fmt.Sprintf("%s %s", firstname, lastname)
 
 	res, err := h.svc.CreateProject(&project)
@@ -256,19 +235,18 @@ func (h handler) Login(ctx *gin.Context) {
 		})
 		return
 	}
-
 	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
 
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
-			"error": "Invalid email or password",
+			"error": err.Error(),
 		})
 		return
 	}
 
 	if dbUser.CheckPasswordHarsh(user.Password) {
 		middleware := middleware.NewMiddleware(&h.svc)
-		tokenString, err := middleware.GenerateToken(user.Email)
+		tokenString, err := middleware.GenerateToken(dbUser.Id)
 
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{
@@ -303,33 +281,14 @@ func (h handler) Signup(ctx *gin.Context) {
 		return
 	}
 
-	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
-
-	if dbUser != nil  {
-		newUser, err := h.svc.CreateUser(&user)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		ctx.JSON(http.StatusCreated, newUser)
-		return
-	}
-
+	newUser, err := h.svc.CreateUser(&user)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
 		return
-
 	}
-
-	if dbUser.Email != "" && dbUser.FirstName != "" {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "user with email exists",
-		})
-		return
-	}
+	ctx.JSON(http.StatusCreated, newUser)
+	return
 
 }
