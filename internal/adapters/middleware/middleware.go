@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -54,7 +55,10 @@ func (m middleware) Authorize(c *gin.Context) {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 	if err != nil {
-		c.AbortWithStatus(http.StatusUnauthorized)
+
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": fmt.Errorf("Request not authorized: %v", err.Error()),
+		})
 		return
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -73,6 +77,9 @@ func (m middleware) Authorize(c *gin.Context) {
 		c.Next()
 	} else {
 		c.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": errors.New("Request not authorized"),
+		})
 		return
 	}
 }
