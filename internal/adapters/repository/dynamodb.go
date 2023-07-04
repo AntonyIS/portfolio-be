@@ -55,10 +55,9 @@ func NewDynamoDBRepository(c *config.AppConfig) ports.PortfolioRepository {
 }
 
 func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
-
 	entityParsed, err := dynamodbattribute.MarshalMap(user)
 	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.CreateUser")
+		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), internalServerError)
 	}
 
 	input := &dynamodb.PutItemInput{
@@ -72,52 +71,45 @@ func (db *dynamoDbClient) CreateUser(user *domain.User) (*domain.User, error) {
 		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.CreateUser")
 	}
 
-	user, err = db.ReadUserWithEmail(user.Email)
-	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.CreateUser")
-	}
-
 	return user, nil
 }
 
 func (db *dynamoDbClient) ReadUser(id string) (*domain.User, error) {
-	users, err := db.ReadUsers()
-	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadUser")
-	}
-	for _, user := range users {
-		if user.Id == id {
-			return user, nil
-		}
-	}
-	return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", itemNotFound, err)), "adapters.repository.dynamodb.ReadUser")
-}
-
-func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) {
 	result, err := db.client.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(db.usersTableName),
 		Key: map[string]*dynamodb.AttributeValue{
-			"email": {
-				S: aws.String(email),
+			"id": {
+				S: aws.String(id),
 			},
 		},
 	})
-
 	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadUserWithEmail")
+		return &domain.User{}, err
 	}
-
 	if result.Item == nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", itemNotFound, err)), "adapters.repository.dynamodb.ReadUserWithEmail")
+		msg := fmt.Sprintf("User with id [ %s ] not found", id)
+		return &domain.User{}, errors.New(msg)
 	}
 	var user domain.User
 	err = dynamodbattribute.UnmarshalMap(result.Item, &user)
-
 	if err != nil {
-		return nil, err
+		return &domain.User{}, err
 	}
 
 	return &user, nil
+}
+
+func (db *dynamoDbClient) ReadUserWithEmail(email string) (*domain.User, error) {
+	users, err := db.ReadUsers()
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users {
+		if user.Email == email {
+			return user, nil
+		}
+	}
+	return nil, errors.New("user with id not found!")
 }
 
 func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
@@ -129,6 +121,8 @@ func (db *dynamoDbClient) ReadUsers() ([]*domain.User, error) {
 		expression.Name("lastname"),
 		expression.Name("email"),
 		expression.Name("projects"),
+		expression.Name("password"),
+		expression.Name("certifications"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()
 

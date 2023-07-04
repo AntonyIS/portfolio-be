@@ -19,7 +19,6 @@ func init() {
 func main() {
 	flag.Parse()
 	config := config.NewConfiguration(env)
-
 	repo := repository.NewDynamoDBRepository(config)
 	svc := services.NewPortfolioService(&repo)
 	gin.InitGinRoutes(*svc, *config)

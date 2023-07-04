@@ -13,22 +13,33 @@ import (
 )
 
 type User struct {
-	Id        string              `json:"id"`
-	FirstName string              `json:"firstname"`
-	LastName  string              `json:"lastname"`
-	Email     string              `json:"email"`
-	Title     string              `json:"title"`
-	Password  string              `json:"password"`
-	Projects  map[string]*Project `json:"projects"`
+	Id             string           `json:"id"`
+	FirstName      string           `json:"firstname"`
+	LastName       string           `json:"lastname"`
+	Email          string           `json:"email"`
+	Title          string           `json:"title"`
+	Password       string           `json:"password"`
+	Projects       []*Project       `json:"projects"`
+	Certifications []*Certification `json:"certification"`
 }
 
+type Certification struct {
+	Id             string `json:"id"`
+	UserID         string `json:"user_id"`
+	Title          string `json:"title"`
+	Institution    string `json:"institution"`
+	State          string `json:"state"`
+	IssuedDate     string `json:"issued_date"`
+	CredentialLink string `json:"credential_link"`
+	Decription     string `json:"decription"`
+}
 type Project struct {
 	Id        string `json:"id"`
+	UserID    string `json:"user_id"`
 	Title     string `json:"title"`
 	Body      string `json:"body"`
 	UserName  string `json:"user_name"`
 	UserTitle string `json:"user_title"`
-	UserEmail string `json:"user_email"`
 	Rate      int    `json:"rate"`
 	CreateAt  int64  `json:"created_at"`
 }
@@ -40,3 +51,5 @@ func (u User) CheckPasswordHarsh(password string) bool {
 	}
 	return true
 }
+
+

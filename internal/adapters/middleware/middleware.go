@@ -22,16 +22,16 @@ func NewMiddleware(svc *services.PortfolioService) *middleware {
 	}
 }
 
-func (m middleware) GenerateToken(email string) (string, error) {
+func (m middleware) GenerateToken(id string) (string, error) {
 	key := []byte(os.Getenv("SECRET_KEY"))
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	user, err := m.svc.ReadUserWithEmail(email)
+	user, err := m.svc.ReadUser(id)
+	fmt.Println(id)
 	if err != nil {
 		return "", err
 	}
 
-	claims["email"] = email
 	claims["user_id"] = user.Id
 	claims["firstname"] = user.FirstName
 	claims["lastname"] = user.LastName
