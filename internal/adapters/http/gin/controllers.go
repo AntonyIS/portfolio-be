@@ -9,7 +9,6 @@ Description :
 package gin
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
@@ -138,12 +137,6 @@ func (h handler) PostProject(ctx *gin.Context) {
 		})
 		return
 	}
-	id := ctx.GetString("id")
-	firstname := ctx.GetString("firstname")
-	lastname := ctx.GetString("lastname")
-
-	project.UserID = id
-	project.UserName = fmt.Sprintf("%s %s", firstname, lastname)
 
 	res, err := h.svc.CreateProject(&project)
 	if err != nil {
@@ -209,7 +202,7 @@ func (h handler) PutProject(ctx *gin.Context) {
 
 func (h handler) DeleteProject(ctx *gin.Context) {
 	id := ctx.Param("id")
-	err := h.svc.DeleteUser(id)
+	err := h.svc.DeleteProject(id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

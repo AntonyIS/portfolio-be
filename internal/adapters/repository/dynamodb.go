@@ -175,11 +175,11 @@ func (db *dynamoDbClient) UpdateUser(user *domain.User) (*domain.User, error) {
 	return user, nil
 }
 
-func (db *dynamoDbClient) DeleteUser(email string) error {
+func (db *dynamoDbClient) DeleteUser(id string) error {
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"email": {
-				S: aws.String(email),
+			"id": {
+				S: aws.String(id),
 			},
 		},
 		TableName: aws.String(db.usersTableName),
@@ -196,7 +196,6 @@ func (db *dynamoDbClient) DeleteUser(email string) error {
 }
 
 func (db *dynamoDbClient) CreateProject(project *domain.Project) (*domain.Project, error) {
-
 	entityParsed, err := dynamodbattribute.MarshalMap(project)
 	if err != nil {
 		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.CreateProject")
@@ -226,15 +225,16 @@ func (db *dynamoDbClient) ReadProject(id string) (*domain.Project, error) {
 	})
 
 	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadProject")
+		return nil, err
 	}
+
 	if result.Item == nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadProject")
+		return nil, errors.New("Project not found")
 	}
 	var project domain.Project
 	err = dynamodbattribute.UnmarshalMap(result.Item, &project)
 	if err != nil {
-		return nil, errs.Wrap(errors.New(fmt.Sprintf("%s: %s", internalServerError, err)), "adapters.repository.dynamodb.ReadProject")
+		return nil, err
 	}
 
 	return &project, nil

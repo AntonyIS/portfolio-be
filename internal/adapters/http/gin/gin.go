@@ -13,7 +13,7 @@ import (
 	"os"
 
 	"github.com/AntonyIS/portfolio-be/config"
-	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
+	// "github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
 	"github.com/AntonyIS/portfolio-be/internal/core/services"
 	"github.com/gin-contrib/cors"
 
@@ -27,9 +27,13 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 	// Setup Gin router
 	router := gin.Default()
 
-	// Configure CORS middleware to allow all origins, methods, and headers
-	// This will change in the future, restrict origin and headers
-	router.Use(cors.Default())
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	// Setup application route handlers
 	handler := NewGinHandler(svc)
@@ -44,11 +48,11 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 	projectsRoutes := router.Group("/api/v1/projects")
 
 	// Add middleware in production
-	if config.Env == "pro" {
-		middleware := middleware.NewMiddleware(&svc)
-		usersRoutes.Use(middleware.Authorize)
-		projectsRoutes.Use(middleware.Authorize)
-	}
+	// if config.Env == "pro" {
+	// 	middleware := middleware.NewMiddleware(&svc)
+	// 	usersRoutes.Use(middleware.Authorize)
+	// 	projectsRoutes.Use(middleware.Authorize)
+	// }
 
 	{
 		usersRoutes.GET("/", handler.GetUsers)

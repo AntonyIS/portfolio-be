@@ -10,6 +10,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/AntonyIS/portfolio-be/internal/core/domain"
@@ -80,6 +81,14 @@ func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error)
 }
 
 func (svc *PortfolioService) DeleteUser(id string) error {
+	// Check if user exists
+	user, err := svc.ReadUser(id)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(user)
+
 	return svc.repo.DeleteUser(id)
 }
 
@@ -90,17 +99,22 @@ func (svc *PortfolioService) CreateProject(project *domain.Project) (*domain.Pro
 	project.CreateAt = time.Now().UTC().Unix()
 	// Get the id of the user
 	userID := project.UserID
+
 	// Get user with id
 	user, err := svc.ReadUser(userID)
 	if err != nil {
 		return nil, err
 	}
+
+	project.UserName = fmt.Sprintf("%s %s", user.FirstName, user.LastName)
+	project.UserTitle = fmt.Sprintf("%s ", user.Title)
 	// Add the new project to user
 	user.Projects = append(user.Projects, project)
 	// Save the new changes for user
 	svc.repo.UpdateUser(user)
 	// Add the new project into the database
 	return svc.repo.CreateProject(project)
+
 }
 
 func (svc *PortfolioService) ReadProject(id string) (*domain.Project, error) {
@@ -122,6 +136,13 @@ func (svc *PortfolioService) DeleteProject(id string) error {
 	if err != nil {
 		return err
 	}
+
+	// Delete project
+	err = svc.repo.DeleteProject(id)
+	if err != nil {
+		return err
+	}
+
 	// Get the user ID from the project
 	userID := project.UserID
 	// Get user with the userID
@@ -142,7 +163,7 @@ func (svc *PortfolioService) DeleteProject(id string) error {
 				return err
 			}
 			// Delete the project from the database
-			return svc.DeleteProject(id)
+			return svc.repo.DeleteProject(id)
 		}
 	}
 
