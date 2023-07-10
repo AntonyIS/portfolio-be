@@ -39,6 +39,7 @@ func InitGinRoutes(svc services.PortfolioService, config config.AppConfig) {
 	handler := NewGinHandler(svc)
 	router.GET("/", handler.Home)
 	router.POST("/api/v1/login", handler.Login)
+	router.POST("/api/v1/logout", handler.Logout)
 	router.POST("/api/v1/signup", handler.Signup)
 
 	// Group users API

@@ -9,6 +9,7 @@ Description :
 package gin
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
@@ -17,6 +18,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+var revokedTokens []string
 
 type GinHandler interface {
 	PostUser(ctx *gin.Context)
@@ -31,6 +34,7 @@ type GinHandler interface {
 	DeleteProject(ctx *gin.Context)
 	Home(ctx *gin.Context)
 	Login(ctx *gin.Context)
+	Logout(ctx *gin.Context)
 	Signup(ctx *gin.Context)
 }
 
@@ -229,7 +233,6 @@ func (h handler) Login(ctx *gin.Context) {
 		return
 	}
 	dbUser, err := h.svc.ReadUserWithEmail(user.Email)
-
 	if err != nil {
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": err.Error(),
@@ -245,23 +248,43 @@ func (h handler) Login(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, gin.H{
 				"error": err.Error(),
 			})
-
 			return
 		}
+
 		ctx.SetSameSite(http.SameSiteLaxMode)
 		ctx.SetCookie("token", tokenString, 3600*24*30, "", "", false, true)
 
 		ctx.JSON(http.StatusOK, gin.H{
-			"access_token": tokenString,
+			"accessToken": tokenString,
 		})
+
 		return
 
 	} else {
-
 		ctx.JSON(http.StatusNotFound, gin.H{
 			"error": "Invalid email or password",
 		})
+		return
 	}
+}
+
+func (h handler) Logout(ctx *gin.Context) {
+	fmt.Println("TOKEN")
+	tokenString := ctx.GetHeader("tokenString")
+
+	if tokenString == "" {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": "Authorization header is missing",
+		})
+		return
+	}
+
+	revokedTokens = append(revokedTokens, tokenString)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "Token invalidated successfuly",
+	})
+
 }
 
 func (h handler) Signup(ctx *gin.Context) {
