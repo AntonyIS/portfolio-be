@@ -28,7 +28,6 @@ func (m middleware) GenerateToken(id string) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	user, err := m.svc.ReadUser(id)
-	fmt.Println(id)
 	if err != nil {
 		return "", err
 	}
