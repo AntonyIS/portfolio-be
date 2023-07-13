@@ -12,7 +12,7 @@ import (
 var env string
 
 func init() {
-	config.LoadEnv()
+	config.LoadEnv(".env")
 	flag.StringVar(&env, "env", "dev", "The environment the application is running")
 }
 
