@@ -40,10 +40,15 @@ func NewConfiguration(Env string) *AppConfig {
 	switch Env {
 
 	case "dev":
-		testing = true
+		testing = false
 
 	case "pro":
 		testing = false
+
+	case "testing":
+		testing = true
+		projectTablename = os.Getenv("DEV_USER_TABLE")
+		projectTablename = os.Getenv("DEV_PROJECT_TABLE")
 
 	}
 	return &AppConfig{
@@ -58,8 +63,8 @@ func NewConfiguration(Env string) *AppConfig {
 	}
 }
 
-func LoadEnv() error {
-	err := godotenv.Load(".env")
+func LoadEnv(path string) error {
+	err := godotenv.Load(path)
 	if err != nil {
 		log.Fatal("Error loading .env file", err)
 	}

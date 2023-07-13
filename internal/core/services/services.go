@@ -82,12 +82,10 @@ func (svc *PortfolioService) UpdateUser(user *domain.User) (*domain.User, error)
 
 func (svc *PortfolioService) DeleteUser(id string) error {
 	// Check if user exists
-	user, err := svc.ReadUser(id)
+	_, err := svc.ReadUser(id)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(user)
 
 	return svc.repo.DeleteUser(id)
 }
