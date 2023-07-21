@@ -9,7 +9,6 @@ Description :
 package gin
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/AntonyIS/portfolio-be/internal/adapters/middleware"
@@ -269,7 +268,7 @@ func (h handler) Login(ctx *gin.Context) {
 }
 
 func (h handler) Logout(ctx *gin.Context) {
-	fmt.Println("TOKEN")
+
 	tokenString := ctx.GetHeader("tokenString")
 
 	if tokenString == "" {

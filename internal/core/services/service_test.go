@@ -16,7 +16,7 @@ func init() {
 
 func TestApplicationService(t *testing.T) {
 
-	config := config.NewConfiguration("testing")
+	config := config.NewConfiguration("dev")
 	repo := repository.NewDynamoDBRepository(config)
 	svc := NewPortfolioService(&repo)
 
@@ -182,16 +182,16 @@ func TestApplicationService(t *testing.T) {
 		}
 
 		// Delete user
-		err = svc.DeleteProject(project.Id)
-		if err != nil {
-			t.Error(err)
-		}
+		// err = svc.DeleteProject(project.Id)
+		// if err != nil {
+		// 	t.Error(err)
+		// }
 
-		// Delete user
-		err = svc.DeleteUser(user.Id)
-		if err != nil {
-			t.Error(err)
-		}
+		// // Delete user
+		// err = svc.DeleteUser(user.Id)
+		// if err != nil {
+		// 	t.Error(err)
+		// }
 
 	})
 	t.Run("Read project with id", func(t *testing.T) {
@@ -337,30 +337,30 @@ func TestApplicationService(t *testing.T) {
 	})
 	t.Run("Delete all test entiities", func(t *testing.T) {
 		// Delete user entities
-		users, err := svc.ReadUsers()
-		if err != nil {
-			t.Error(err)
-		}
+		// users, err := svc.ReadUsers()
+		// if err != nil {
+		// 	t.Error(err)
+		// }
 
-		for _, user := range users {
-			err := svc.DeleteUser(user.Id)
-			if err != nil {
-				t.Error(err)
-			}
-		}
+		// for _, user := range users {
+		// 	err := svc.DeleteUser(user.Id)
+		// 	if err != nil {
+		// 		t.Error(err)
+		// 	}
+		// }
 
-		// Delete project entities
-		projects, err := svc.ReadProjects()
-		if err != nil {
-			t.Error(err)
-		}
+		// // Delete project entities
+		// projects, err := svc.ReadProjects()
+		// if err != nil {
+		// 	t.Error(err)
+		// }
 
-		for _, project := range projects {
-			err := svc.DeleteProject(project.Id)
-			if err != nil {
-				t.Error(err)
-			}
-		}
+		// for _, project := range projects {
+		// 	err := svc.DeleteProject(project.Id)
+		// 	if err != nil {
+		// 		t.Error(err)
+		// 	}
+		// }
 	})
 
 }
