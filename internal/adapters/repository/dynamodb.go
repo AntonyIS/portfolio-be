@@ -248,6 +248,8 @@ func (db *dynamoDbClient) ReadProjects() ([]*domain.Project, error) {
 		expression.Name("title"),
 		expression.Name("body"),
 		expression.Name("user_id"),
+		expression.Name("user_title"),
+		expression.Name("user_name"),
 		expression.Name("created_at"),
 	)
 	expr, err := expression.NewBuilder().WithFilter(filt).WithProjection(proj).Build()

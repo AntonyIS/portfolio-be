@@ -31,7 +31,6 @@ func NewPortfolioService(repo *ports.PortfolioRepository) *PortfolioService {
 
 func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error) {
 	// Check if user already exist in the database
-	// Get all users
 	users, err := svc.repo.ReadUsers()
 	if err != nil {
 		return nil, err
@@ -44,8 +43,8 @@ func (svc *PortfolioService) CreateUser(user *domain.User) (*domain.User, error)
 		}
 	}
 	user.Id = uuid.New().String()
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+
 	if err != nil {
 		return nil, err
 	}
